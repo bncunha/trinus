@@ -1,0 +1,23 @@
+{
+  "name": "trinus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SaaS de controle operacional para confecções, com inteligência de prazos e produção.",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @trinus/api --filter @trinus/web dev",
+    "dev:api": "pnpm --filter @trinus/api dev",
+    "dev:web": "pnpm --filter @trinus/web dev",
+    "build": "pnpm -r --if-present build",
+    "test:e2e": "playwright test",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.0.0"
+  }
+}

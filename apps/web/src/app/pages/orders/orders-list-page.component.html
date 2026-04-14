@@ -1,0 +1,51 @@
+<section class="orders-app__view" *ngIf="orders$ | async as orders">
+  <section class="orders-app__panel">
+    <div class="orders-app__panel-header">
+      <div>
+        <p class="orders-app__section-label">Listagem</p>
+        <h2 class="orders-app__section-title">Acompanhe os pedidos</h2>
+      </div>
+
+      <div class="orders-app__panel-actions">
+        <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos/dashboard">
+          Resumo
+        </a>
+        <a class="orders-app__button orders-app__button-link" routerLink="/pedidos/formulario">
+          Novo pedido
+        </a>
+      </div>
+    </div>
+
+    <div class="orders-app__empty" *ngIf="orders.length === 0">
+      Sem pedidos ainda.
+    </div>
+
+    <ul class="orders-app__list" *ngIf="orders.length > 0">
+      <li class="orders-app__item" *ngFor="let order of orders; trackBy: trackByOrderId">
+        <div class="orders-app__item-main">
+          <strong class="orders-app__item-reference">Pedido {{ order.orderNumber }}</strong>
+          <span class="orders-app__item-customer">{{ order.customerName }}</span>
+        </div>
+
+        <div class="orders-app__item-column">
+          <span class="orders-app__item-label">Situação</span>
+          <span class="orders-app__item-status">{{ getStatusLabel(order.status) }}</span>
+        </div>
+
+        <div class="orders-app__item-column">
+          <span class="orders-app__item-label">Entrega</span>
+          <strong>{{ formatDate(order.deliveryDate) }}</strong>
+        </div>
+
+        <div class="orders-app__item-column">
+          <span class="orders-app__item-label">Risco</span>
+          <strong>{{ getRiskLabel(order.riskLevel) }}</strong>
+        </div>
+
+        <a class="orders-app__button orders-app__button--secondary orders-app__button-link" [routerLink]="['/pedidos/formulario', order.id]">
+          Editar
+        </a>
+      </li>
+    </ul>
+  </section>
+</section>

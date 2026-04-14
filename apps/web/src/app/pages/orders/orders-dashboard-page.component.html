@@ -1,0 +1,67 @@
+<section class="orders-app__view" *ngIf="viewModel$ | async as viewModel">
+  <section class="orders-app__quick-actions" aria-label="Ações rápidas de pedidos">
+    <div>
+      <p class="orders-app__section-label">Ações rápidas</p>
+      <p class="orders-app__quick-actions-text">Escolha o próximo passo no módulo.</p>
+    </div>
+
+    <div class="orders-app__quick-actions-buttons">
+      <a class="orders-app__button orders-app__button-link" routerLink="/pedidos">
+        Ver lista
+      </a>
+
+      <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos/formulario">
+        Novo pedido
+      </a>
+    </div>
+  </section>
+
+  <section class="orders-app__metrics" aria-label="Números de pedidos">
+    <article class="orders-app__metric">
+      <span class="orders-app__metric-value">{{ viewModel.orders.length }}</span>
+      <span class="orders-app__metric-label">Pedidos totais</span>
+    </article>
+
+    <article class="orders-app__metric">
+      <span class="orders-app__metric-value">{{ viewModel.openOrderCount }}</span>
+      <span class="orders-app__metric-label">Em aberto</span>
+    </article>
+
+    <article class="orders-app__metric">
+      <span class="orders-app__metric-value">{{ viewModel.attentionOrderCount }}</span>
+      <span class="orders-app__metric-label">Precisam de atenção</span>
+    </article>
+
+    <article class="orders-app__metric">
+      <span class="orders-app__metric-value orders-app__metric-value--text">{{ viewModel.nextDeliveryText }}</span>
+      <span class="orders-app__metric-label">Próxima entrega</span>
+    </article>
+  </section>
+
+  <section class="orders-app__panel">
+    <div class="orders-app__panel-header">
+      <div>
+        <p class="orders-app__section-label">Últimos pedidos</p>
+        <h2 class="orders-app__section-title">Veja os 5 mais recentes</h2>
+      </div>
+      <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos">
+        Ver todos
+      </a>
+    </div>
+
+    <ul class="orders-app__list orders-app__list--compact" *ngIf="hasRecentOrders(viewModel.recentOrders)">
+      <li class="orders-app__item orders-app__item--compact" *ngFor="let order of viewModel.recentOrders; trackBy: trackByOrderId">
+        <div class="orders-app__item-main">
+          <strong class="orders-app__item-reference">Pedido {{ order.orderNumber }}</strong>
+          <span class="orders-app__item-customer">{{ order.customerName }}</span>
+        </div>
+        <span class="orders-app__item-status">{{ getStatusLabel(order.status) }}</span>
+        <strong>{{ formatDate(order.deliveryDate) }}</strong>
+      </li>
+    </ul>
+
+    <div class="orders-app__empty" *ngIf="!hasRecentOrders(viewModel.recentOrders)">
+      Sem pedidos ainda.
+    </div>
+  </section>
+</section>

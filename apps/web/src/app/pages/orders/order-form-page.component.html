@@ -1,0 +1,144 @@
+<section class="orders-app__view">
+  <p
+    class="orders-app__message orders-app__message--success"
+    role="status"
+    aria-live="polite"
+    *ngIf="feedbackMessage"
+  >
+    {{ feedbackMessage }}
+  </p>
+
+  <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+
+  <section class="orders-app__panel orders-app__panel--form">
+    <form class="orders-app__form" [formGroup]="orderForm" (ngSubmit)="saveOrder()">
+      <section class="orders-app__form-section orders-app__form-section--full" aria-label="Dados principais">
+        <div class="orders-app__form-section-header">
+          <h2 class="orders-app__section-title">Dados principais</h2>
+        </div>
+
+        <div class="orders-app__form-grid">
+          <label class="orders-app__field">
+            <span class="orders-app__field-label">Cliente</span>
+            <input
+              class="orders-app__field-control"
+              [class.orders-app__field-control--invalid]="orderForm.controls.customerName.touched && orderForm.controls.customerName.invalid"
+              type="text"
+              formControlName="customerName"
+              placeholder="Nome do cliente"
+            />
+            <app-form-field-error [control]="orderForm.controls.customerName"></app-form-field-error>
+          </label>
+
+          <label class="orders-app__field">
+            <span class="orders-app__field-label">Código do pedido</span>
+            <input
+              class="orders-app__field-control"
+              [class.orders-app__field-control--invalid]="orderForm.controls.orderNumber.touched && orderForm.controls.orderNumber.invalid"
+              type="text"
+              formControlName="orderNumber"
+              placeholder="Ex.: PED-2410"
+            />
+            <app-form-field-error [control]="orderForm.controls.orderNumber"></app-form-field-error>
+          </label>
+
+          <label class="orders-app__field">
+            <span class="orders-app__field-label">Início</span>
+            <input
+              class="orders-app__field-control"
+              [class.orders-app__field-control--invalid]="orderForm.controls.startDate.touched && orderForm.controls.startDate.invalid"
+              type="date"
+              formControlName="startDate"
+            />
+            <app-form-field-error [control]="orderForm.controls.startDate"></app-form-field-error>
+          </label>
+
+          <label class="orders-app__field">
+            <span class="orders-app__field-label">Entrega</span>
+            <input
+              class="orders-app__field-control"
+              [class.orders-app__field-control--invalid]="orderForm.controls.deliveryDate.touched && orderForm.controls.deliveryDate.invalid"
+              type="date"
+              formControlName="deliveryDate"
+            />
+            <app-form-field-error [control]="orderForm.controls.deliveryDate"></app-form-field-error>
+          </label>
+        </div>
+      </section>
+
+      <section class="orders-app__form-section orders-app__form-section--full" formArrayName="products" aria-label="Itens do pedido">
+        <div class="orders-app__form-section-header">
+          <div>
+            <h2 class="orders-app__section-title">Itens do pedido</h2>
+          </div>
+          <button type="button" class="orders-app__button orders-app__button--secondary" (click)="addProduct()">
+            Adicionar item
+          </button>
+        </div>
+
+        <div class="orders-app__product-list">
+          <div
+            class="orders-app__product-row"
+            *ngFor="let product of getProductControls(); let index = index"
+            [formGroupName]="index"
+          >
+            <label class="orders-app__field">
+              <span class="orders-app__field-label">Item</span>
+              <input
+                class="orders-app__field-control"
+                [class.orders-app__field-control--invalid]="product.controls.name.touched && product.controls.name.invalid"
+                type="text"
+                formControlName="name"
+                placeholder="Produto ou serviço"
+              />
+              <app-form-field-error [control]="product.controls.name"></app-form-field-error>
+            </label>
+
+            <label class="orders-app__field">
+              <span class="orders-app__field-label">Quantidade</span>
+              <input
+                class="orders-app__field-control"
+                [class.orders-app__field-control--invalid]="product.controls.quantity.touched && product.controls.quantity.invalid"
+                type="number"
+                min="0.01"
+                step="0.01"
+                formControlName="quantity"
+              />
+              <app-form-field-error [control]="product.controls.quantity"></app-form-field-error>
+            </label>
+
+            <button
+              type="button"
+              class="orders-app__button orders-app__button--secondary orders-app__button--row"
+              (click)="removeProduct(index)"
+            >
+              Remover
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <label class="orders-app__field orders-app__field--full">
+        <span class="orders-app__field-label">Observações finais</span>
+        <textarea
+          class="orders-app__field-control orders-app__field-control--textarea"
+          formControlName="finalNotes"
+          placeholder="Opcional"
+          rows="4"
+        ></textarea>
+        <small class="orders-app__field-help">Opcional. Use para informar detalhes finais do pedido.</small>
+      </label>
+
+      <div class="orders-app__actions">
+        <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos">
+          Cancelar
+        </a>
+        <button type="submit" class="orders-app__button" [disabled]="isSaving">
+          {{ isSaving ? 'Salvando...' : 'Salvar pedido' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</section>

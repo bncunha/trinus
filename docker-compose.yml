@@ -1,0 +1,75 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: trinus-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: trinus
+      MYSQL_USER: trinus
+      MYSQL_PASSWORD: trinus
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: trinus-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - apps/api/.env
+    environment:
+      DATABASE_URL: "mysql://trinus:trinus@mysql:3306/trinus"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/workspace
+      - api-node-modules:/workspace/node_modules
+      - api-app-node-modules:/workspace/apps/api/node_modules
+    working_dir: /workspace
+    command: >
+      sh -lc "if [ ! -f apps/api/node_modules/@nestjs/cli/bin/nest.js ]; then
+      pnpm install --filter @trinus/api --frozen-lockfile=false --force;
+      fi;
+      pnpm --filter @trinus/api exec nest start --watch --entryFile apps/api/src/main"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: trinus-web
+    depends_on:
+      - api
+    env_file:
+      - apps/web/.env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/workspace
+      - web-node-modules:/workspace/node_modules
+      - web-app-node-modules:/workspace/apps/web/node_modules
+    working_dir: /workspace
+    command: >
+      sh -lc "if [ ! -f apps/web/node_modules/@angular/cli/bin/ng.js ]; then
+      pnpm install --filter @trinus/web --frozen-lockfile=false --force;
+      fi;
+      pnpm --filter @trinus/web exec ng serve --host 0.0.0.0 --poll 1000"
+
+volumes:
+  mysql-data:
+  api-node-modules:
+  api-app-node-modules:
+  web-node-modules:
+  web-app-node-modules:

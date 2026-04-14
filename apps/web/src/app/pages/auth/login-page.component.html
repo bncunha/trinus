@@ -1,0 +1,65 @@
+<section class="orders-auth">
+  <section class="orders-auth__story" aria-label="Trinus">
+    <div class="orders-auth__brand orders-auth__brand--hero">
+      <span class="orders-app__brand-mark">T</span>
+      <strong>Trinus</strong>
+    </div>
+
+    <div class="orders-auth__copy">
+      <p class="orders-auth__kicker">Pedidos, prazos e produção sob controle.</p>
+      <h1>Entrar no Trinus</h1>
+      <p>
+        Conecte pedido, fila e produção em uma rotina única para decidir antes que o atraso apareça.
+      </p>
+    </div>
+
+    <div class="orders-auth__signal" aria-label="Sinais operacionais">
+      <span>Pedido</span>
+      <span>Fila</span>
+      <span>Risco</span>
+      <span>Entrega</span>
+    </div>
+  </section>
+
+  <form class="orders-auth__panel" [formGroup]="loginForm" (ngSubmit)="login()">
+    <p class="orders-app__eyebrow">Acesso</p>
+    <h1 class="orders-app__title">Entrar no Trinus</h1>
+    <p class="orders-app__section-description">Entre para acompanhar pedidos, prazos e decisões da produção.</p>
+
+    <label class="orders-app__field">
+      <span class="orders-app__field-label">E-mail</span>
+      <input
+        class="orders-app__field-control"
+        [class.orders-app__field-control--invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+      />
+      <app-form-field-error [control]="loginForm.controls.email"></app-form-field-error>
+    </label>
+
+    <label class="orders-app__field">
+      <span class="orders-app__field-label">Senha</span>
+      <input
+        class="orders-app__field-control"
+        [class.orders-app__field-control--invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+      />
+      <app-form-field-error [control]="loginForm.controls.password"></app-form-field-error>
+    </label>
+
+    <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
+
+    <button type="submit" class="orders-app__button" [disabled]="isAuthenticating">
+      {{ isAuthenticating ? 'Entrando...' : 'Entrar' }}
+    </button>
+
+    <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/criar-conta">
+      Criar nova conta
+    </a>
+  </form>
+</section>

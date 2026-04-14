@@ -1,0 +1,33 @@
+<section class="orders-app__view">
+  <section class="orders-app__panel orders-app__panel--summary">
+    <div>
+      <p class="orders-app__section-label">Operação</p>
+      <h2 class="orders-app__section-title">Resumo geral</h2>
+      <p class="orders-app__section-description">
+        Aqui ficarão os principais números de todos os módulos.
+      </p>
+    </div>
+    <a class="orders-app__button orders-app__button-link" routerLink="/pedidos">
+      Ir para pedidos
+    </a>
+  </section>
+
+  <section class="orders-app__dashboard-grid">
+    <article class="orders-app__panel orders-app__panel--summary">
+      <div>
+        <p class="orders-app__section-label">Pedidos</p>
+        <h2 class="orders-app__section-title">{{ openOrderCount$ | async }} em aberto</h2>
+        <p class="orders-app__section-description">Acompanhe prazos, riscos e próximos passos.</p>
+      </div>
+      <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos/dashboard">
+        Ver resumo
+      </a>
+    </article>
+
+    <article class="orders-app__panel orders-app__panel--muted">
+      <p class="orders-app__section-label">Em breve</p>
+      <h2 class="orders-app__section-title">Produção, Pós-venda e Equipe</h2>
+      <p class="orders-app__section-description">Novas áreas entrarão como módulos próprios.</p>
+    </article>
+  </section>
+</section>

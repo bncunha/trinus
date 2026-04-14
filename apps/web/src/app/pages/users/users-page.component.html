@@ -1,0 +1,87 @@
+<section class="orders-app__view">
+  <section class="orders-app__panel orders-app__panel--form">
+    <div>
+      <p class="orders-app__section-label">Acessos</p>
+      <h2 class="orders-app__section-title">Usuários da empresa</h2>
+      <p class="orders-app__section-description">
+        Cadastre pessoas da sua empresa com o papel adequado para acessar o Trinus.
+      </p>
+    </div>
+
+    <form class="orders-app__form" [formGroup]="userForm" (ngSubmit)="createUser()">
+      <div class="orders-app__form-grid">
+        <label class="orders-app__field">
+          <span class="orders-app__field-label">Nome</span>
+          <input class="orders-app__field-control" type="text" formControlName="name" />
+          <app-form-field-error [control]="userForm.controls.name"></app-form-field-error>
+        </label>
+
+        <label class="orders-app__field">
+          <span class="orders-app__field-label">E-mail</span>
+          <input class="orders-app__field-control" type="email" formControlName="email" autocomplete="email" />
+          <app-form-field-error [control]="userForm.controls.email"></app-form-field-error>
+        </label>
+
+        <label class="orders-app__field">
+          <span class="orders-app__field-label">Papel</span>
+          <select class="orders-app__field-control" formControlName="role">
+            <option value="ADMIN">Administrador</option>
+            <option value="MANAGER">Gestor</option>
+            <option value="OPERATOR">Operador</option>
+          </select>
+        </label>
+
+        <label class="orders-app__field">
+          <span class="orders-app__field-label">Senha inicial</span>
+          <input class="orders-app__field-control" type="password" formControlName="password" autocomplete="new-password" />
+          <app-form-field-error [control]="userForm.controls.password"></app-form-field-error>
+        </label>
+      </div>
+
+      <label class="orders-app__field">
+        <span class="orders-app__field-label">
+          <input type="checkbox" formControlName="isActive" />
+          Usuário ativo
+        </span>
+      </label>
+
+      <p class="orders-app__message orders-app__message--success" role="status" *ngIf="successMessage">
+        {{ successMessage }}
+      </p>
+
+      <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </p>
+
+      <div class="orders-app__actions">
+        <button type="submit" class="orders-app__button" [disabled]="isSaving">
+          {{ isSaving ? 'Salvando...' : 'Criar usuário' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="orders-app__panel">
+    <div>
+      <p class="orders-app__section-label">Equipe</p>
+      <h2 class="orders-app__section-title">Acessos cadastrados</h2>
+    </div>
+
+    <div class="orders-app__loading" *ngIf="isLoading">Carregando usuários...</div>
+
+    <p class="orders-app__empty" *ngIf="!isLoading && users.length === 0">
+      Nenhum usuário cadastrado ainda.
+    </p>
+
+    <ul class="orders-app__list" *ngIf="!isLoading && users.length > 0">
+      <li class="orders-app__item orders-app__item--compact" *ngFor="let user of users">
+        <span class="orders-app__item-main">
+          <strong>{{ user.name }}</strong>
+          <span class="orders-app__item-customer">{{ user.email }}</span>
+        </span>
+        <span class="orders-app__item-status">{{ roleLabels[user.role] }}</span>
+        <span class="orders-app__item-label">{{ user.isActive ? 'Ativo' : 'Inativo' }}</span>
+      </li>
+    </ul>
+  </section>
+</section>
