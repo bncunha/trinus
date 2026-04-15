@@ -35,7 +35,7 @@ docker compose up --build
 Depois acesse:
 
 ```txt
-http://localhost:4200
+http://localhost:4500
 ```
 
 ## Variáveis de Ambiente

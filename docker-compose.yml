@@ -38,9 +38,11 @@ services:
       - api-app-node-modules:/workspace/apps/api/node_modules
     working_dir: /workspace
     command: >
-      sh -lc "if [ ! -f apps/api/node_modules/@nestjs/cli/bin/nest.js ]; then
-      pnpm install --filter @trinus/api --frozen-lockfile=false --force;
+      sh -lc "if [ ! -f apps/api/node_modules/@nestjs/cli/bin/nest.js ] || [ ! -f packages/contracts/node_modules/typescript/bin/tsc ]; then
+      pnpm install --filter @trinus/api --filter @trinus/contracts --frozen-lockfile=false --force;
       fi;
+      pnpm --filter @trinus/contracts build;
+      pnpm --filter @trinus/api exec prisma generate;
       pnpm --filter @trinus/api exec nest start --watch --entryFile apps/api/src/main"
 
   web:
@@ -55,7 +57,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
     ports:
-      - "4200:4200"
+      - "4500:4500"
     volumes:
       - .:/workspace
       - web-node-modules:/workspace/node_modules
@@ -65,7 +67,7 @@ services:
       sh -lc "if [ ! -f apps/web/node_modules/@angular/cli/bin/ng.js ]; then
       pnpm install --filter @trinus/web --frozen-lockfile=false --force;
       fi;
-      pnpm --filter @trinus/web exec ng serve --host 0.0.0.0 --poll 1000"
+      pnpm --filter @trinus/web exec ng serve --host 0.0.0.0 --port 4500 --poll 1000"
 
 volumes:
   mysql-data:

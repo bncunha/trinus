@@ -5,8 +5,8 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { CreateOrderInput, Order, UpdateOrderInput } from '@trinus/contracts';
 import { OrdersService } from '../../services-api/orders.service';
-import { FlashMessageService } from '../../shared/flash-message.service';
 import { FormFieldErrorComponent } from '../../shared/form-field-error.component';
+import { ToastService } from '../../shared/toast.service';
 
 @Component({
   selector: 'app-order-form-page',
@@ -19,14 +19,13 @@ export class OrderFormPageComponent implements OnInit {
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly flashMessageService = inject(FlashMessageService);
   private readonly ordersService = inject(OrdersService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
   protected editingOrderId = '';
   protected errorMessage = '';
-  protected feedbackMessage = '';
   protected isSaving = false;
   protected readonly orderForm = this.formBuilder.nonNullable.group({
     customerName: ['', [Validators.required, Validators.maxLength(80)]],
@@ -86,11 +85,10 @@ export class OrderFormPageComponent implements OnInit {
       .subscribe({
         next: () => {
           this.isSaving = false;
-          this.flashMessageService.show({
-            kind: 'success',
-            text: this.editingOrderId ? 'Pedido atualizado com sucesso.' : 'Pedido salvo com sucesso.'
-          });
-          this.feedbackMessage = this.editingOrderId ? 'Pedido atualizado com sucesso.' : 'Pedido salvo com sucesso.';
+          this.toastService.success(
+            this.editingOrderId ? 'Pedido atualizado' : 'Pedido salvo',
+            this.editingOrderId ? 'Pedido atualizado com sucesso.' : 'Pedido salvo com sucesso.'
+          );
           this.resetOrderForm();
           this.changeDetectorRef.markForCheck();
           void this.router.navigateByUrl('/pedidos');
@@ -126,7 +124,6 @@ export class OrderFormPageComponent implements OnInit {
   }
 
   private clearMessages(): void {
-    this.feedbackMessage = '';
     this.errorMessage = '';
   }
 

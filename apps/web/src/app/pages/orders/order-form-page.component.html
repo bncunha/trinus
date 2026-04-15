@@ -1,13 +1,4 @@
 <section class="orders-app__view">
-  <p
-    class="orders-app__message orders-app__message--success"
-    role="status"
-    aria-live="polite"
-    *ngIf="feedbackMessage"
-  >
-    {{ feedbackMessage }}
-  </p>
-
   <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
     {{ errorMessage }}
   </p>

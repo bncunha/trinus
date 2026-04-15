@@ -12,6 +12,6 @@ RUN pnpm install --filter @trinus/web --frozen-lockfile=false
 
 COPY . .
 
-EXPOSE 4200
+EXPOSE 4500
 
-CMD ["pnpm", "--filter", "@trinus/web", "dev", "--host", "0.0.0.0"]
+CMD ["pnpm", "--filter", "@trinus/web", "dev", "--host", "0.0.0.0", "--port", "4500"]

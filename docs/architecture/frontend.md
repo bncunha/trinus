@@ -37,7 +37,7 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 - `services-api` concentra chamadas HTTP, normalização de dados recebidos e controle de sessão, mas cada service deve representar um contexto funcional único.
 - `AuthService` deve cuidar apenas de autenticação, sessão, login, cadastro, refresh e logout.
 - Contextos diferentes devem ter services próprios, como `UsersService` para usuários e `OrdersService` para pedidos.
-- `shared` concentra peças reutilizáveis, como `FormFieldErrorComponent` e `FlashMessageService`.
+- `shared` concentra peças reutilizáveis, como `FormFieldErrorComponent`, `ToastService` e `ConfirmDialogService`.
 - O shell autenticado cuida de navegação, dados da sessão, logout, carregamento inicial de pedidos e feedback global entre páginas.
 
 ## Decisoes
@@ -49,7 +49,11 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 - Novas telas devem entrar como componentes em `pages` e serem registradas em `app.routes.ts` com `loadComponent`, salvo quando houver motivo técnico para carregamento eager.
 - Componentes compartilhados não devem depender de páginas específicas.
 - Services de API não devem renderizar UI; eles expõem dados e operações para páginas, guards, interceptors e shell.
-- Mensagens que precisam sobreviver à navegação usam `FlashMessageService`, evitando voltar a concentrar páginas no shell.
+- Feedbacks globais devem usar `ToastService` e o componente global instanciado no `AppComponent`.
+- Confirmações de ações devem usar `ConfirmDialogService` e o componente global instanciado no `AppComponent`.
+- O `AppComponent` pode instanciar componentes globais sem assumir regra de página.
+- Filtros locais podem ficar no componente da página quando a lista for pequena e já estiver carregada inteira no front-end.
+- Filtros que exigirem paginação, grande volume de dados ou consulta consistente no servidor devem ser implementados via service de API.
 
 ## Estilos
 
@@ -57,6 +61,7 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 - Estilos globais, tokens, reset, classes utilitárias compartilhadas e padrões realmente reutilizados por múltiplos componentes devem ficar em `apps/web/src/styles.css`.
 - O `AppComponent` não deve ser usado como depósito de estilos globais.
 - Antes de criar uma classe global, o `frontend-engineer` deve validar se ela é realmente compartilhada por múltiplos componentes.
+- Animações estão restritas, por enquanto, a drawer, dialog de confirmação e toast global.
 
 ## Testes
 
@@ -71,3 +76,7 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 - Todo texto exibido ao usuário deve estar em português do Brasil com acentuação correta.
 - Componentes, páginas e testes de frontend devem preservar acentos em mensagens de validação, erro, sucesso, estados vazios, loading e labels.
 - A revisão de frontend deve rejeitar novas mensagens sem acentuação correta.
+- Toasts devem receber tipo `success`, `warning` ou `danger`, título e mensagem.
+- Quando título ou mensagem não forem informados, o toast deve usar texto padrão seguro.
+- Toasts fecham automaticamente em 5 segundos por padrão, com duração parametrizável por chamada.
+- Confirmações devem receber título, mensagem, labels quando necessário e callbacks de continuar/cancelar.

@@ -46,6 +46,10 @@
 - `GET /orders/:id`
 - `POST /orders`
 - `PATCH /orders/:id`
+- `GET /users`
+- `POST /users`
+- `PATCH /users/:id`
+- `DELETE /users/:id`
 
 Rotas de API para cadastros base devem ser detalhadas quando a implementacao for planejada.
 
@@ -57,3 +61,4 @@ Rotas de API para cadastros base devem ser detalhadas quando a implementacao for
 - O item `Dashboard` da navegacao principal deve abrir `/dashboard`.
 - O item `Pedidos` da navegacao principal deve abrir `/pedidos`.
 - A protecao real das permissoes deve acontecer no backend.
+- Cadastros simples como usuarios devem manter uma unica rota de lista e abrir criacao/edicao em drawer.

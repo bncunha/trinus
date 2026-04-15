@@ -849,10 +849,139 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
 
+.app-panel {
+  display: grid;
+  gap: 22px;
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.app-section-label {
+  margin: 0 0 6px;
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.app-section-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.app-section-description {
+  max-width: 640px;
+  margin: 10px 0 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.app-button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-button--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.app-button--danger {
+  background: var(--color-surface);
+  color: var(--color-danger);
+  border-color: rgba(184, 63, 57, 0.34);
+}
+
+.app-button:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.app-button-link {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+}
+
+.app-message {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.app-message--success {
+  background: rgba(31, 122, 91, 0.1);
+  color: var(--color-primary);
+}
+
+.app-message--error {
+  background: rgba(196, 72, 64, 0.12);
+  color: var(--color-danger);
+}
+
+.app-loading,
+.app-empty {
+  padding: 20px 0;
+  color: var(--color-muted);
+}
+
+.app-field {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+}
+
+.app-field__label {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.app-field__help,
+.app-field__hint {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.app-field__control {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.app-field__control:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(31, 122, 91, 0.14);
+}
+
+.app-field__control--invalid {
+  border-color: var(--color-danger);
+}
+
+.app-field__hint,
 .orders-app__field-hint,
 .form-field-error {
   color: var(--color-danger);

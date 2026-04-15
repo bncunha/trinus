@@ -22,10 +22,18 @@
 - No inicio, o sistema tera os papeis Administrador, Gestor e Operador.
 - O primeiro usuario criado junto com uma nova empresa sera Administrador.
 - O Administrador pode cadastrar novos usuarios para acessar sua propria empresa.
+- O Administrador pode editar usuarios da propria empresa.
+- O Administrador pode ativar, desativar e excluir usuarios da propria empresa quando a regra permitir.
 - O Administrador gerencia empresa, usuarios e configuracoes.
 - O Gestor gerencia pedidos, fila, producao e decisoes operacionais.
 - O Operador fica fora do fluxo principal do primeiro MVP de pedidos inteligentes.
 - Usuarios so podem acessar dados da propria empresa.
+- Usuario ativo precisa ter senha.
+- A empresa deve manter pelo menos um Administrador ativo.
+- O usuario autenticado nao pode excluir a si mesmo.
+- O usuario autenticado nao pode desativar o proprio acesso.
+- O unico Administrador ativo da empresa nao pode ser excluido, desativado ou rebaixado.
+- Quando um usuario tiver historico operacional vinculado, a exclusao deve ser substituida por desativacao de acesso.
 
 ## Cadastros Base
 

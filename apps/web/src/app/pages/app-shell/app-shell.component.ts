@@ -5,7 +5,6 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, Ro
 import { filter, map, startWith } from 'rxjs';
 import { AuthService } from '../../services-api/auth.service';
 import { OrdersService } from '../../services-api/orders.service';
-import { FlashMessageService } from '../../shared/flash-message.service';
 
 @Component({
   selector: 'app-shell',
@@ -18,13 +17,11 @@ export class AppShellComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly flashMessageService = inject(FlashMessageService);
   private readonly ordersService = inject(OrdersService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   protected readonly session$ = this.authService.session$;
-  protected readonly flashMessage$ = this.flashMessageService.message$;
   protected readonly pageData$ = this.router.events.pipe(
     filter((event): event is NavigationEnd => event instanceof NavigationEnd),
     startWith(null),
@@ -44,7 +41,6 @@ export class AppShellComponent implements OnInit {
 
   protected logout(): void {
     this.errorMessage = '';
-    this.flashMessageService.clear();
     this.authService.logout().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.ordersService.resetOrders();
@@ -55,10 +51,6 @@ export class AppShellComponent implements OnInit {
         this.changeDetectorRef.markForCheck();
       }
     });
-  }
-
-  protected clearFlashMessage(): void {
-    this.flashMessageService.clear();
   }
 
   private loadOrders(): void {

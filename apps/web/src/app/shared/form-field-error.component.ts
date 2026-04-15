@@ -39,7 +39,7 @@ const DEFAULT_ERROR_MESSAGES: ErrorMessages = {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <small class="orders-app__field-hint form-field-error" *ngIf="message">
+    <small class="app-field__hint form-field-error" *ngIf="message">
       {{ message }}
     </small>
   `

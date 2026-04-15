@@ -1,6 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import type { AuthCompany, AuthSession, AuthUser, CreateUserInput, RegisterAccountInput } from '@trinus/contracts';
+import type {
+  AuthCompany,
+  AuthSession,
+  AuthUser,
+  CreateUserInput,
+  RegisterAccountInput,
+  UpdateUserInput
+} from '@trinus/contracts';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -16,6 +23,13 @@ type UserRecord = StoredUser & {
 export abstract class AccountsRepository {
   abstract createAccount(input: RegisterAccountInput, passwordHash: string): Promise<AuthSession>;
   abstract createUser(companyId: string, input: CreateUserInput, passwordHash: string | null): Promise<AuthUser>;
+  abstract updateUser(
+    companyId: string,
+    userId: string,
+    input: UpdateUserInput,
+    passwordHash: string | null
+  ): Promise<AuthUser>;
+  abstract deleteUser(companyId: string, userId: string): Promise<void>;
   abstract findStoredUserByEmail(email: string): Promise<StoredUser | null>;
   abstract findSessionByUserId(userId: string): Promise<AuthSession | null>;
   abstract listUsers(companyId: string): Promise<AuthUser[]>;
@@ -77,6 +91,58 @@ export class InMemoryAccountsRepository extends AccountsRepository {
     this.users.push(user);
 
     return this.toPublicUser(user);
+  }
+
+  async updateUser(
+    companyId: string,
+    userId: string,
+    input: UpdateUserInput,
+    passwordHash: string | null
+  ): Promise<AuthUser> {
+    const user = this.users.find((item) => item.id === userId && item.companyId === companyId);
+
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (input.email !== undefined) {
+      const normalizedEmail = this.normalizeEmail(input.email);
+      const emailOwner = this.users.find((item) => item.email === normalizedEmail && item.id !== userId);
+
+      if (emailOwner) {
+        throw new ConflictException('User already exists.');
+      }
+
+      user.email = normalizedEmail;
+    }
+
+    if (input.name !== undefined) {
+      user.name = input.name.trim();
+    }
+
+    if (input.role !== undefined) {
+      user.role = input.role;
+    }
+
+    if (input.isActive !== undefined) {
+      user.isActive = input.isActive;
+    }
+
+    if (passwordHash !== null) {
+      user.passwordHash = passwordHash;
+    }
+
+    return this.toPublicUser(user);
+  }
+
+  async deleteUser(companyId: string, userId: string): Promise<void> {
+    const userIndex = this.users.findIndex((item) => item.id === userId && item.companyId === companyId);
+
+    if (userIndex === -1) {
+      throw new NotFoundException('User not found.');
+    }
+
+    this.users.splice(userIndex, 1);
   }
 
   async findStoredUserByEmail(email: string): Promise<StoredUser | null> {
@@ -191,6 +257,76 @@ export class PrismaAccountsRepository extends AccountsRepository {
     return this.toPublicUser(user);
   }
 
+  async updateUser(
+    companyId: string,
+    userId: string,
+    input: UpdateUserInput,
+    passwordHash: string | null
+  ): Promise<AuthUser> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: { id: userId, companyId }
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const data: Prisma.UserUpdateInput = {};
+
+    if (input.email !== undefined) {
+      const normalizedEmail = this.normalizeEmail(input.email);
+      const emailOwner = await this.prisma.user.findFirst({
+        where: {
+          email: normalizedEmail,
+          NOT: { id: userId }
+        }
+      });
+
+      if (emailOwner) {
+        throw new ConflictException('User already exists.');
+      }
+
+      data.email = normalizedEmail;
+    }
+
+    if (input.name !== undefined) {
+      data.name = input.name.trim();
+    }
+
+    if (input.role !== undefined) {
+      data.role = input.role;
+    }
+
+    if (input.isActive !== undefined) {
+      data.isActive = input.isActive;
+    }
+
+    if (passwordHash !== null) {
+      data.passwordHash = passwordHash;
+    }
+
+    const user = await this.prisma.user.update({
+      data,
+      where: { id: existingUser.id }
+    });
+
+    return this.toPublicUser(user);
+  }
+
+  async deleteUser(companyId: string, userId: string): Promise<void> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: { id: userId, companyId }
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException('User not found.');
+    }
+
+    await this.prisma.user.delete({
+      where: { id: existingUser.id }
+    });
+  }
+
   async findStoredUserByEmail(email: string): Promise<StoredUser | null> {
     const user = await this.prisma.user.findUnique({
       where: { email: this.normalizeEmail(email) }
@@ -213,7 +349,7 @@ export class PrismaAccountsRepository extends AccountsRepository {
   }
 
   async listUsers(companyId: string): Promise<AuthUser[]> {
-    const users = await this.prisma.user.findMany({
+    const users: UserRecord[] = await this.prisma.user.findMany({
       orderBy: { name: 'asc' },
       where: { companyId }
     });
@@ -247,7 +383,7 @@ export class PrismaAccountsRepository extends AccountsRepository {
     };
   }
 
-  private toPublicUser(user: StoredUser): AuthUser {
+  private toPublicUser(user: UserRecord): AuthUser {
     const { passwordHash: _passwordHash, ...publicUser } = this.toStoredUser(user);
 
     return publicUser;

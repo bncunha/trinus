@@ -45,6 +45,8 @@ export interface CreateUserInput {
   isActive?: boolean;
 }
 
+export type UpdateUserInput = Partial<CreateUserInput>;
+
 export interface OrderProduct {
   name: string;
   quantity: number;

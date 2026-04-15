@@ -49,7 +49,7 @@ AUTH_COOKIE_NAME="trinus_auth"
 AUTH_REFRESH_COOKIE_NAME="trinus_refresh"
 AUTH_COOKIE_SECURE=false
 AUTH_COOKIE_SAME_SITE="lax"
-CORS_ORIGIN="http://localhost:4200"
+CORS_ORIGIN="http://localhost:4500"
 ```
 
 Ao rodar a API dentro do `docker compose`, o host do banco é sobrescrito para `mysql`, que é o nome do serviço na rede Docker.

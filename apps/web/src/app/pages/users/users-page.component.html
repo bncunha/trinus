@@ -1,87 +1,186 @@
-<section class="orders-app__view">
-  <section class="orders-app__panel orders-app__panel--form">
-    <div>
-      <p class="orders-app__section-label">Acessos</p>
-      <h2 class="orders-app__section-title">Usuários da empresa</h2>
-      <p class="orders-app__section-description">
-        Cadastre pessoas da sua empresa com o papel adequado para acessar o Trinus.
-      </p>
-    </div>
-
-    <form class="orders-app__form" [formGroup]="userForm" (ngSubmit)="createUser()">
-      <div class="orders-app__form-grid">
-        <label class="orders-app__field">
-          <span class="orders-app__field-label">Nome</span>
-          <input class="orders-app__field-control" type="text" formControlName="name" />
-          <app-form-field-error [control]="userForm.controls.name"></app-form-field-error>
-        </label>
-
-        <label class="orders-app__field">
-          <span class="orders-app__field-label">E-mail</span>
-          <input class="orders-app__field-control" type="email" formControlName="email" autocomplete="email" />
-          <app-form-field-error [control]="userForm.controls.email"></app-form-field-error>
-        </label>
-
-        <label class="orders-app__field">
-          <span class="orders-app__field-label">Papel</span>
-          <select class="orders-app__field-control" formControlName="role">
-            <option value="ADMIN">Administrador</option>
-            <option value="MANAGER">Gestor</option>
-            <option value="OPERATOR">Operador</option>
-          </select>
-        </label>
-
-        <label class="orders-app__field">
-          <span class="orders-app__field-label">Senha inicial</span>
-          <input class="orders-app__field-control" type="password" formControlName="password" autocomplete="new-password" />
-          <app-form-field-error [control]="userForm.controls.password"></app-form-field-error>
-        </label>
+<section class="users-page">
+  <section class="app-panel">
+    <div class="users-page__header">
+      <div>
+        <p class="app-section-label">Equipe</p>
+        <h2 class="app-section-title">Acessos cadastrados</h2>
+        <p class="app-section-description">Gerencie quem pode acessar o Trinus e qual papel cada pessoa terá.</p>
       </div>
 
-      <label class="orders-app__field">
-        <span class="orders-app__field-label">
-          <input type="checkbox" formControlName="isActive" />
-          Usuário ativo
-        </span>
+      <button type="button" class="app-button" (click)="openCreateDrawer()" [disabled]="isLoading">Novo usuário</button>
+    </div>
+
+    <div class="app-loading" *ngIf="isLoading">Carregando usuários...</div>
+
+    <div class="app-empty users-page__empty" *ngIf="!isLoading && users.length === 0">
+      <strong>Nenhum usuário cadastrado ainda.</strong>
+      <span>Cadastre pessoas da sua empresa para liberar o acesso ao Trinus.</span>
+      <button type="button" class="app-button" (click)="openCreateDrawer()">Novo usuário</button>
+    </div>
+
+    <form class="users-page__filters" [formGroup]="filterForm" *ngIf="!isLoading && users.length > 0" aria-label="Filtros de usuários">
+      <label class="app-field users-page__filter-search">
+        <span class="app-field__label">Busca</span>
+        <input class="app-field__control" type="search" formControlName="search" placeholder="Buscar por nome ou e-mail" />
       </label>
 
-      <p class="orders-app__message orders-app__message--success" role="status" *ngIf="successMessage">
-        {{ successMessage }}
-      </p>
+      <label class="app-field">
+        <span class="app-field__label">Papel</span>
+        <select class="app-field__control" formControlName="role">
+          <option value="ALL">Todos</option>
+          <option value="ADMIN">Administrador</option>
+          <option value="MANAGER">Gestor</option>
+          <option value="OPERATOR">Operador</option>
+        </select>
+      </label>
 
-      <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </p>
+      <label class="app-field">
+        <span class="app-field__label">Situação</span>
+        <select class="app-field__control" formControlName="status">
+          <option value="ALL">Todas</option>
+          <option value="ACTIVE">Ativos</option>
+          <option value="INACTIVE">Inativos</option>
+        </select>
+      </label>
 
-      <div class="orders-app__actions">
-        <button type="submit" class="orders-app__button" [disabled]="isSaving">
-          {{ isSaving ? 'Salvando...' : 'Criar usuário' }}
-        </button>
-      </div>
+      <button type="button" class="app-button app-button--secondary users-page__clear-filters" (click)="clearFilters()" *ngIf="hasActiveFilters">
+        Limpar filtros
+      </button>
     </form>
-  </section>
 
-  <section class="orders-app__panel">
-    <div>
-      <p class="orders-app__section-label">Equipe</p>
-      <h2 class="orders-app__section-title">Acessos cadastrados</h2>
+    <p class="users-page__result-summary" *ngIf="!isLoading && users.length > 0" aria-live="polite">{{ resultSummary }}</p>
+
+    <div class="app-empty users-page__empty" *ngIf="!isLoading && users.length > 0 && filteredUsers.length === 0">
+      <strong>Nenhum usuário encontrado.</strong>
+      <span>Ajuste os filtros ou limpe a busca para ver outros usuários.</span>
+      <button type="button" class="app-button app-button--secondary" (click)="clearFilters()" *ngIf="hasActiveFilters">Limpar filtros</button>
     </div>
 
-    <div class="orders-app__loading" *ngIf="isLoading">Carregando usuários...</div>
-
-    <p class="orders-app__empty" *ngIf="!isLoading && users.length === 0">
-      Nenhum usuário cadastrado ainda.
-    </p>
-
-    <ul class="orders-app__list" *ngIf="!isLoading && users.length > 0">
-      <li class="orders-app__item orders-app__item--compact" *ngFor="let user of users">
-        <span class="orders-app__item-main">
+    <ul class="users-page__list" *ngIf="!isLoading && filteredUsers.length > 0">
+      <li class="users-page__item" *ngFor="let user of filteredUsers">
+        <span class="users-page__item-main">
           <strong>{{ user.name }}</strong>
-          <span class="orders-app__item-customer">{{ user.email }}</span>
+          <span>{{ user.email }}</span>
         </span>
-        <span class="orders-app__item-status">{{ roleLabels[user.role] }}</span>
-        <span class="orders-app__item-label">{{ user.isActive ? 'Ativo' : 'Inativo' }}</span>
+        <span class="users-page__badge">{{ roleLabels[user.role] }}</span>
+        <span class="users-page__status" [class.users-page__status--inactive]="!user.isActive">
+          {{ user.isActive ? 'Ativo' : 'Inativo' }}
+        </span>
+        <div class="users-page__actions">
+          <button
+            type="button"
+            class="users-page__icon-button users-page__edit-action"
+            (click)="openEditDrawer(user)"
+            aria-label="Editar usuário"
+            title="Editar"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+          </button>
+
+          <div class="users-page__menu-wrapper">
+            <button
+              type="button"
+              class="users-page__icon-button"
+              (click)="toggleActionsMenu(user.id)"
+              [attr.aria-expanded]="openedActionsUserId === user.id"
+              aria-haspopup="menu"
+              aria-label="Mais opções"
+              title="Mais opções"
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+            </button>
+
+            <div class="users-page__actions-menu" role="menu" *ngIf="openedActionsUserId === user.id">
+              <button type="button" role="menuitem" class="users-page__menu-item" (click)="openEditDrawer(user)">
+                <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+                Editar
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                class="users-page__menu-item"
+                (click)="toggleUserAccess(user)"
+                [disabled]="isCurrentUser(user) || isOnlyActiveAdmin(user) || changingAccessUserId === user.id"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">
+                  {{ user.isActive ? 'block' : 'check_circle' }}
+                </span>
+                {{ user.isActive ? 'Desativar acesso' : 'Ativar acesso' }}
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                class="users-page__menu-item users-page__menu-item--danger"
+                (click)="deleteUser(user)"
+                [disabled]="isCurrentUser(user) || isOnlyActiveAdmin(user) || deletingUserId === user.id"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                Excluir usuário
+              </button>
+            </div>
+          </div>
+        </div>
       </li>
     </ul>
   </section>
+
+  <div class="users-page__menu-backdrop" *ngIf="openedActionsUserId" (click)="closeActionsMenu()"></div>
+
+  <div class="users-page__drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+
+  <aside class="users-page__drawer" [class.users-page__drawer--open]="isDrawerOpen" aria-label="Formulário de usuário">
+    <div class="users-page__drawer-header">
+      <div>
+        <p class="app-section-label">Acessos</p>
+        <h2 class="app-section-title">{{ editingUser ? 'Editar usuário' : 'Novo usuário' }}</h2>
+        <p class="app-section-description">O papel define quais informações o usuário pode ver e alterar.</p>
+      </div>
+      <button type="button" class="users-page__drawer-close" (click)="closeDrawer()" aria-label="Fechar formulário">
+        Fechar
+      </button>
+    </div>
+
+    <form class="users-page__form" [formGroup]="userForm" (ngSubmit)="saveUser()">
+      <label class="app-field">
+        <span class="app-field__label">Nome</span>
+        <input class="app-field__control" type="text" formControlName="name" />
+        <app-form-field-error [control]="userForm.controls.name"></app-form-field-error>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">E-mail</span>
+        <input class="app-field__control" type="email" formControlName="email" autocomplete="email" />
+        <small class="app-field__help" *ngIf="editingUser">O e-mail de acesso não é alterado neste fluxo.</small>
+        <app-form-field-error [control]="userForm.controls.email"></app-form-field-error>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">Papel</span>
+        <select class="app-field__control" formControlName="role">
+          <option value="ADMIN">Administrador</option>
+          <option value="MANAGER">Gestor</option>
+          <option value="OPERATOR">Operador</option>
+        </select>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">{{ editingUser ? 'Nova senha' : 'Senha inicial' }}</span>
+        <input class="app-field__control" type="password" formControlName="password" autocomplete="new-password" />
+        <small class="app-field__help" *ngIf="editingUser">Preencha somente se quiser alterar a senha.</small>
+        <app-form-field-error [control]="userForm.controls.password"></app-form-field-error>
+      </label>
+
+      <label class="users-page__checkbox">
+        <input type="checkbox" formControlName="isActive" [attr.disabled]="editingUser && isCurrentUser(editingUser) ? true : null" />
+        <span>Usuário ativo</span>
+      </label>
+
+      <div class="users-page__drawer-actions">
+        <button type="button" class="app-button app-button--secondary" (click)="closeDrawer()">Cancelar</button>
+        <button type="submit" class="app-button" [disabled]="isSaving">
+          {{ isSaving ? 'Salvando...' : editingUser ? 'Salvar alterações' : 'Criar usuário' }}
+        </button>
+      </div>
+    </form>
+  </aside>
 </section>

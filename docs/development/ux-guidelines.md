@@ -49,3 +49,32 @@ O design deve priorizar clareza operacional em vez de densidade de informação.
 - Operadores devem ver apenas o necessário para executar seu trabalho.
 - A interface do Operador deve evitar informações comerciais ou sensíveis.
 - Instruções de execução devem ser diretas.
+
+## Cadastros e CRUDs
+
+- Todo novo CRUD deve permitir listar, cadastrar, editar e excluir ou desativar registros, conforme a regra de negócio.
+- Cadastros simples devem manter a lista como tela principal e abrir o formulário em drawer lateral no desktop.
+- No mobile, o drawer deve se comportar como tela cheia ou sheet para preservar espaço e legibilidade.
+- Cadastros complexos devem usar página própria de formulário.
+- A decisão não deve considerar só quantidade de campos: dependência entre campos, seções, itens dinâmicos, anexos, cálculo, revisão final e risco operacional tornam o cadastro complexo.
+- Ações destrutivas devem pedir confirmação antes de executar.
+- Quando um registro puder ter histórico operacional, a ação principal deve ser desativar/inativar; exclusão física deve ser usada apenas quando a regra permitir.
+
+## Ações em Listas de CRUD
+
+- Listas não devem repetir vários botões textuais em cada item quando isso prejudicar a leitura.
+- CRUDs simples devem usar ação principal discreta por item e menu `Mais opções` para ações secundárias.
+- No desktop, a ação frequente, como editar, pode aparecer como ícone com `aria-label` e tooltip.
+- No mobile, ações por item devem ficar concentradas em menu ou sheet com texto completo.
+- Ícones podem simplificar a interface, mas ações ambíguas ou destrutivas devem aparecer com texto no menu.
+- Ações destrutivas, como excluir, devem ficar em menu secundário e nunca ter o mesmo peso visual da ação principal.
+- Ações no topo após seleção devem ser usadas apenas quando houver seleção em massa ou ação em lote.
+
+## Filtros em CRUDs
+
+- Filtros devem ficar próximos da lista que afetam, preferencialmente acima dos registros.
+- A busca textual deve ser o primeiro filtro quando ela existir.
+- Filtros locais são aceitáveis quando a lista for pequena e já estiver carregada inteira no front-end.
+- A interface deve mostrar a quantidade de registros cadastrados ou encontrados.
+- O botão de limpar filtros só deve aparecer quando houver filtro ativo.
+- O estado vazio de uma lista sem registros deve ser diferente do estado sem resultados para filtros aplicados.

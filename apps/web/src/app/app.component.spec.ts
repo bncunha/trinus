@@ -20,4 +20,11 @@ describe('AppComponent', () => {
 
     expect(host.querySelector('router-outlet')).not.toBeNull();
   });
+
+  it('instancia os componentes globais de feedback e confirmacao', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('app-toast-container')).not.toBeNull();
+    expect(host.querySelector('app-confirm-dialog')).not.toBeNull();
+  });
 });

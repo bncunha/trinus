@@ -55,20 +55,6 @@
       {{ errorMessage }}
     </p>
 
-    <p
-      class="orders-app__message"
-      [class.orders-app__message--success]="flashMessage.kind === 'success'"
-      [class.orders-app__message--error]="flashMessage.kind === 'error'"
-      [attr.role]="flashMessage.kind === 'success' ? 'status' : 'alert'"
-      aria-live="polite"
-      *ngIf="flashMessage$ | async as flashMessage"
-    >
-      {{ flashMessage.text }}
-      <button type="button" class="orders-app__message-close" (click)="clearFlashMessage()" aria-label="Fechar mensagem">
-        Fechar
-      </button>
-    </p>
-
     <div class="orders-app__loading" *ngIf="isLoadingOrders">Atualizando pedidos...</div>
 
     <router-outlet></router-outlet>

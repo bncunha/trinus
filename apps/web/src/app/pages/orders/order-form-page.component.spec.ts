@@ -3,7 +3,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angul
 import type { CreateOrderInput, Order } from '@trinus/contracts';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { OrdersService } from '../../services-api/orders.service';
-import { FlashMessageService } from '../../shared/flash-message.service';
+import { ToastService } from '../../shared/toast.service';
 import { OrderFormPageComponent } from './order-form-page.component';
 
 class OrdersServiceStub {
@@ -44,8 +44,8 @@ class OrdersServiceStub {
   );
 }
 
-class FlashMessageServiceStub {
-  show = jest.fn();
+class ToastServiceStub {
+  success = jest.fn();
 }
 
 describe('OrderFormPageComponent', () => {
@@ -72,7 +72,7 @@ describe('OrderFormPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: OrdersService, useValue: ordersService },
-        { provide: FlashMessageService, useClass: FlashMessageServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -113,7 +113,7 @@ describe('OrderFormPageComponent', () => {
         products: [{ name: 'Camiseta polo', quantity: 80.25 }]
       })
     );
-    expect(host.textContent).toContain('Pedido salvo com sucesso.');
+    expect(TestBed.inject(ToastService).success).toHaveBeenCalledWith('Pedido salvo', 'Pedido salvo com sucesso.');
   });
 
   it('substitui erro de API por feedback de validação', () => {
@@ -164,7 +164,10 @@ describe('OrderFormPageComponent', () => {
         customerName: 'Cia. Aurora Atualizada'
       })
     );
-    expect(host.textContent).toContain('Pedido atualizado com sucesso.');
+    expect(TestBed.inject(ToastService).success).toHaveBeenCalledWith(
+      'Pedido atualizado',
+      'Pedido atualizado com sucesso.'
+    );
   });
 
   it('adiciona múltiplos itens ao pedido', () => {

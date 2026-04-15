@@ -18,6 +18,7 @@ Permissoes iniciais:
 - Cadastrar usuarios da propria empresa.
 - Alterar papel de usuarios da propria empresa.
 - Ativar ou desativar acesso de usuarios da propria empresa.
+- Excluir usuarios da propria empresa quando a regra permitir.
 - Gerenciar tamanhos de vestuario.
 - Gerenciar unidades de medida.
 - Gerenciar variaveis.
@@ -68,3 +69,12 @@ Quando entrar no escopo, restricoes iniciais:
 - O backend deve validar autorizacao em rotas protegidas.
 - O frontend pode ocultar acoes indisponiveis, mas nao deve ser a fonte de seguranca.
 - A API deve retornar apenas os dados permitidos para o papel do usuario.
+
+## Usuarios
+
+- Apenas `ADMIN` pode acessar `GET /users`, `POST /users`, `PATCH /users/:id` e `DELETE /users/:id`.
+- Todas as operacoes de usuarios devem respeitar o `companyId` do usuario autenticado.
+- `PATCH /users/:id` permite alterar nome, papel, situacao ativa e senha.
+- Na alteracao de senha, a senha so muda quando um novo valor e enviado.
+- `DELETE /users/:id` nao permite excluir o proprio usuario autenticado.
+- O backend nao deve permitir remover, rebaixar ou desativar o ultimo Administrador ativo da empresa.
