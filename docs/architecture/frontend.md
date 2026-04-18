@@ -37,7 +37,7 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 - `services-api` concentra chamadas HTTP, normalização de dados recebidos e controle de sessão, mas cada service deve representar um contexto funcional único.
 - `AuthService` deve cuidar apenas de autenticação, sessão, login, cadastro, refresh e logout.
 - Contextos diferentes devem ter services próprios, como `UsersService` para usuários e `OrdersService` para pedidos.
-- `shared` concentra peças reutilizáveis, como `FormFieldErrorComponent`, `ToastService` e `ConfirmDialogService`.
+- `shared` concentra peças reutilizáveis, como `FormFieldErrorComponent`, `SharedListComponent`, `ToastService` e `ConfirmDialogService`.
 - O shell autenticado cuida de navegação, dados da sessão, logout, carregamento inicial de pedidos e feedback global entre páginas.
 
 ## Decisoes
@@ -48,6 +48,8 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 - Um teste só deve ficar em `app.component.spec.ts` quando validar responsabilidade direta do `AppComponent`.
 - Novas telas devem entrar como componentes em `pages` e serem registradas em `app.routes.ts` com `loadComponent`, salvo quando houver motivo técnico para carregamento eager.
 - Componentes compartilhados não devem depender de páginas específicas.
+- Listas reutilizáveis devem usar `SharedListComponent` quando a estrutura visual da lista for comum e o conteúdo de cada item variar por contexto.
+- O conteúdo dinâmico do item deve ser passado por `ng-template`, mantendo ações e regras na página dona do fluxo.
 - Services de API não devem renderizar UI; eles expõem dados e operações para páginas, guards, interceptors e shell.
 - Feedbacks globais devem usar `ToastService` e o componente global instanciado no `AppComponent`.
 - Confirmações de ações devem usar `ConfirmDialogService` e o componente global instanciado no `AppComponent`.

@@ -7,6 +7,7 @@ import { AuthService } from '../../services-api/auth.service';
 import { UsersService } from '../../services-api/users.service';
 import { ConfirmDialogService } from '../../shared/confirm-dialog.service';
 import { FormFieldErrorComponent } from '../../shared/form-field-error.component';
+import { SharedListComponent } from '../../shared/shared-list.component';
 import { ToastService } from '../../shared/toast.service';
 
 type UserRoleFilter = 'ALL' | UserRole;
@@ -15,7 +16,7 @@ type UserStatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 @Component({
   selector: 'app-users-page',
   standalone: true,
-  imports: [CommonModule, FormFieldErrorComponent, ReactiveFormsModule],
+  imports: [CommonModule, FormFieldErrorComponent, ReactiveFormsModule, SharedListComponent],
   templateUrl: './users-page.component.html',
   styleUrl: './users-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -84,6 +84,7 @@ Componentes iniciais recomendados:
 - Card de indicador.
 - Lista de pedidos.
 - Item de pedido.
+- Lista compartilhada com conteúdo de item dinâmico.
 - Badge de situacao.
 - Badge de risco.
 - Badge de criticidade.
@@ -129,6 +130,14 @@ Componentes iniciais recomendados:
 - A tela deve informar a quantidade de registros encontrados quando houver filtros ativos.
 - `Limpar filtros` deve aparecer apenas quando houver algum filtro ativo.
 - O estado vazio de lista sem registros deve ser diferente do estado sem resultados para os filtros.
+
+## Padrao de Listas Reutilizaveis
+
+- Listas com estrutura visual repetida devem usar um componente compartilhado.
+- O componente compartilhado deve padronizar container, espacamento, borda, raio e fundo dos itens.
+- O conteudo interno de cada item deve ser dinamico por `ng-template`.
+- A pagina continua responsavel pelas acoes, menus, badges, regras de permissao e textos especificos do contexto.
+- Estados vazios, loading e filtros devem permanecer na pagina quando dependerem da regra daquele fluxo.
 
 ## Padrao de Feedback
 

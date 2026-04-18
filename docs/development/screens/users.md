@@ -23,6 +23,8 @@ Não devem ser criadas rotas separadas como `/usuarios/novo` ou `/usuarios/:id/e
 - Papel.
 - Situação do acesso.
 
+A estrutura visual da lista deve usar o componente compartilhado de lista. O conteúdo do item permanece específico da tela de usuários para preservar ações, permissões e regras do módulo.
+
 ## Filtros
 
 A lista de usuários usa filtros locais no front-end, porque a lista atual é pequena e carregada inteira por empresa.

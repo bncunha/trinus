@@ -56,8 +56,9 @@
       <button type="button" class="app-button app-button--secondary" (click)="clearFilters()" *ngIf="hasActiveFilters">Limpar filtros</button>
     </div>
 
-    <ul class="users-page__list" *ngIf="!isLoading && filteredUsers.length > 0">
-      <li class="users-page__item" *ngFor="let user of filteredUsers">
+    <app-shared-list [items]="filteredUsers" ariaLabel="Usuários filtrados" *ngIf="!isLoading && filteredUsers.length > 0">
+      <ng-template let-user>
+        <div class="users-page__item">
         <span class="users-page__item-main">
           <strong>{{ user.name }}</strong>
           <span>{{ user.email }}</span>
@@ -120,8 +121,9 @@
             </div>
           </div>
         </div>
-      </li>
-    </ul>
+        </div>
+      </ng-template>
+    </app-shared-list>
   </section>
 
   <div class="users-page__menu-backdrop" *ngIf="openedActionsUserId" (click)="closeActionsMenu()"></div>
