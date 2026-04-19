@@ -101,7 +101,7 @@ Campos iniciais:
 - `id`
 - `companyId`
 - `name`
-- `symbol`
+- `code`
 - `isActive`
 - `createdAt`
 - `updatedAt`
@@ -109,7 +109,7 @@ Campos iniciais:
 Regras:
 
 - `name` deve ser unico por empresa.
-- `symbol` deve ser unico por empresa.
+- `code` deve ser unico por empresa.
 - Cada nova empresa deve iniciar com Metro, Peca, Hora e Kilo.
 
 ## ProductionVariable
@@ -201,8 +201,9 @@ Campos iniciais:
 - `sectorId`
 - `name`
 - `measurementUnitId`
-- `capacityPerBusinessDay`
+- `capacityPerWorkday`
 - `variableId`
+- `position`
 - `isActive`
 - `createdAt`
 - `updatedAt`
@@ -240,14 +241,13 @@ Campos iniciais:
 
 - `id`
 - `templateId`
-- `stepId`
-- `sequence`
-- `createdAt`
-- `updatedAt`
+- `stageId`
+- `position`
 
 Regras:
 
-- `sequence` define a ordem das etapas no template.
+- `position` define a ordem das etapas no template.
+- A mesma etapa pode aparecer mais de uma vez no template quando o fluxo produtivo exigir repeticao.
 
 ## Order
 

@@ -1,5 +1,26 @@
 # Feature: Cadastros Base MVP
 
+## Status
+
+Em andamento.
+
+Primeiro incremento entregue com banco real:
+
+- Unidades de medida por empresa, com seed inicial de Metro, Peca, Hora e Kilo.
+- Variaveis numericas simples.
+- Setores produtivos.
+- Etapas produtivas com setor, unidade, capacidade por dia util e variavel opcional.
+- Templates de producao com etapas em ordem.
+- Tela `/configuracoes` com CRUDs conectados a API real.
+
+Pendentes para completar a Fase 1:
+
+- Tamanhos de vestuario.
+- Clientes.
+- Produtos sem categoria.
+- Variaveis default no produto.
+- Regras completas de inativacao considerando pedidos reais.
+
 ## Objetivo
 
 Permitir que cada empresa configure os dados necessarios para cadastrar produtos, montar templates de producao e calcular prazos de pedidos.
@@ -82,6 +103,7 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 - O nome do setor nao pode repetir dentro da mesma empresa.
 - Ao visualizar um setor, o sistema deve permitir consultar suas etapas.
 - O sistema deve permitir criar uma etapa a partir do contexto de um setor.
+- Setores nao possuem ordenacao manual no MVP; listas podem ser ordenadas por nome.
 
 ## Etapas
 
@@ -94,6 +116,8 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
   - Variavel opcional para multiplicar a demanda do pedido.
 - Exemplo: a etapa Costurar pertence ao setor Costura e produz 100 pecas por dia util.
 - Quando a etapa usa variavel, o valor da variavel no pedido deve multiplicar a quantidade do item para calcular a carga daquela etapa.
+- Novas etapas so podem selecionar setores, unidades de medida e variaveis ativos.
+- Edicoes preservam vinculos antigos mesmo quando o cadastro vinculado foi inativado.
 
 ## Templates de Producao
 
@@ -111,6 +135,8 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
   - 5 - Conferencia.
 - O template facilita o cadastro do pedido, mas nao bloqueia ajustes manuais.
 - Alterar etapas em um pedido nao altera o template original.
+- Novos templates so podem selecionar etapas ativas.
+- A ordenacao das etapas no formulario usa botoes `Subir` e `Descer`, com acoes desabilitadas nas extremidades da lista.
 
 ## Fora do Escopo
 
@@ -122,13 +148,13 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 
 ## Criterios de Aceite
 
-- A empresa consegue cadastrar tamanhos sem duplicidade.
+- A empresa consegue cadastrar tamanhos sem duplicidade. *(pendente)*
 - A empresa consegue cadastrar unidades sem duplicidade de nome ou sigla.
 - Nova empresa recebe metro, peca, hora e kilo como unidades iniciais.
 - A empresa consegue cadastrar variaveis numericas.
-- A empresa consegue cadastrar clientes com CPF, CNPJ, endereco e telefones opcionais.
-- A empresa consegue cadastrar produtos sem categoria.
-- A empresa consegue associar variaveis default ao produto.
+- A empresa consegue cadastrar clientes com CPF, CNPJ, endereco e telefones opcionais. *(pendente)*
+- A empresa consegue cadastrar produtos sem categoria. *(pendente)*
+- A empresa consegue associar variaveis default ao produto. *(pendente)*
 - A empresa consegue cadastrar setores e etapas.
 - A empresa consegue montar templates com etapas em ordem.
 - Dados cadastrados por uma empresa nao aparecem nem conflitam com outra empresa.

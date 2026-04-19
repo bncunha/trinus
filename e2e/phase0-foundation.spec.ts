@@ -156,6 +156,47 @@ test.describe.serial('Fase 0 - fundacao multiempresa real', () => {
     await expect(page.getByRole('link', { name: /Usu.rios/ })).toHaveCount(0);
   });
 
+  test('administrador lista, filtra, edita e exclui usuarios da propria empresa', async ({ page }) => {
+    const input = account('CrudUsuarios');
+    const userEmail = email('crud.usuario');
+
+    await registerByUi(page, input);
+    await page.getByRole('link', { name: /Usu.rios/ }).click();
+
+    await expect(page.getByText(input.email)).toBeVisible();
+
+    await page.getByRole('button', { name: /Novo usu.rio/ }).click();
+    await page.locator('.users-page__drawer').getByLabel('Nome').fill('Usuario CRUD');
+    await page.locator('.users-page__drawer').getByLabel('E-mail').fill(userEmail);
+    await page.locator('.users-page__drawer').getByLabel('Papel').selectOption('MANAGER');
+    await page.locator('.users-page__drawer').getByLabel('Senha inicial').fill('secret123');
+    await page.getByRole('button', { name: /Criar usu.rio/ }).click();
+
+    await expect(page.getByText(/Usu.rio criado com sucesso./)).toBeVisible();
+    await expect(page.getByText(userEmail)).toBeVisible();
+
+    await page.getByLabel('Busca').fill('usuario crud');
+    await expect(page.getByText('Usuario CRUD')).toBeVisible();
+    await expect(page.getByText(input.email)).toHaveCount(0);
+
+    const userRow = page.locator('.users-page__item').filter({ hasText: userEmail });
+    await userRow.getByRole('button', { name: /Editar usu.rio/ }).click();
+    await page.locator('.users-page__drawer').getByLabel('Nome').fill('Usuario CRUD Editado');
+    await page.getByRole('button', { name: /Salvar altera..es/ }).click();
+
+    await expect(page.getByText(/Altera..es salvas com sucesso./)).toBeVisible();
+    await expect(page.getByText('Usuario CRUD Editado')).toBeVisible();
+
+    await page.getByLabel('Busca').fill('');
+    const editedRow = page.locator('.users-page__item').filter({ hasText: userEmail });
+    await editedRow.getByRole('button', { name: /Mais op..es/ }).click();
+    await page.getByRole('menuitem', { name: /Excluir usu.rio/ }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /Excluir usu.rio/ }).click();
+
+    await expect(page.getByText(/Usu.rio exclu.do com sucesso./)).toBeVisible();
+    await expect(page.getByText(userEmail)).toHaveCount(0);
+  });
+
   test('isola usuarios por empresa no backend real', async () => {
     const companyA = account('IsoladaA');
     const companyB = account('IsoladaB');

@@ -210,6 +210,14 @@ export class PrismaAccountsRepository extends AccountsRepository {
           name: input.companyName.trim()
         }
       });
+      await transaction.measurementUnit.createMany({
+        data: [
+          { companyId: company.id, name: 'Metro', code: 'm' },
+          { companyId: company.id, name: 'Peça', code: 'un' },
+          { companyId: company.id, name: 'Hora', code: 'h' },
+          { companyId: company.id, name: 'Kilo', code: 'kg' }
+        ]
+      });
       const user = await transaction.user.create({
         data: {
           companyId: company.id,

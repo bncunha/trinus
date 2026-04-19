@@ -20,6 +20,11 @@
 - `/pedidos/formulario/:id`
 - `/fila-producao`
 - `/configuracoes`
+- `/configuracoes/unidades-medida`
+- `/configuracoes/variaveis`
+- `/configuracoes/setores`
+- `/configuracoes/etapas`
+- `/configuracoes/templates-producao`
 - `/usuarios`
 
 ### Gestor
@@ -29,6 +34,12 @@
 - `/pedidos/formulario`
 - `/pedidos/formulario/:id`
 - `/fila-producao`
+- `/configuracoes`
+- `/configuracoes/unidades-medida`
+- `/configuracoes/variaveis`
+- `/configuracoes/setores`
+- `/configuracoes/etapas`
+- `/configuracoes/templates-producao`
 
 ### Operador
 
@@ -50,8 +61,26 @@
 - `POST /users`
 - `PATCH /users/:id`
 - `DELETE /users/:id`
-
-Rotas de API para cadastros base devem ser detalhadas quando a implementacao for planejada.
+- `GET /master-data/measurement-units`
+- `POST /master-data/measurement-units`
+- `PATCH /master-data/measurement-units/:id`
+- `DELETE /master-data/measurement-units/:id`
+- `GET /master-data/variables`
+- `POST /master-data/variables`
+- `PATCH /master-data/variables/:id`
+- `DELETE /master-data/variables/:id`
+- `GET /master-data/sectors`
+- `POST /master-data/sectors`
+- `PATCH /master-data/sectors/:id`
+- `DELETE /master-data/sectors/:id`
+- `GET /master-data/stages`
+- `POST /master-data/stages`
+- `PATCH /master-data/stages/:id`
+- `DELETE /master-data/stages/:id`
+- `GET /master-data/templates`
+- `POST /master-data/templates`
+- `PATCH /master-data/templates/:id`
+- `DELETE /master-data/templates/:id`
 
 ## Regras
 
@@ -62,3 +91,4 @@ Rotas de API para cadastros base devem ser detalhadas quando a implementacao for
 - O item `Pedidos` da navegacao principal deve abrir `/pedidos`.
 - A protecao real das permissoes deve acontecer no backend.
 - Cadastros simples como usuarios devem manter uma unica rota de lista e abrir criacao/edicao em drawer.
+- Cadastros base do primeiro incremento usam `/configuracoes` como indice e rotas filhas para CRUDs.

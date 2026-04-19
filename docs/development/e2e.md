@@ -56,6 +56,37 @@ A suite em `e2e/phase0-foundation.spec.ts` cobre:
 - Bloqueio de endpoint administrativo `/users` para `MANAGER`.
 - Redirecionamento de `OPERATOR` para `/minha-execucao`.
 - Isolamento de usuarios entre empresas.
+- CRUD completo da tela de usuarios:
+  - listar;
+  - filtrar;
+  - criar;
+  - editar;
+  - excluir.
+
+## Cobertura Atual da Fase 1
+
+A suite em `e2e/phase1-master-data.spec.ts` cobre:
+
+- Criacao de empresa com seed real de unidades iniciais.
+- Fluxo produtivo base com unidade, variavel, setor, etapa e template.
+- CRUD completo das telas de cadastros base implementadas:
+  - unidades de medida;
+  - variaveis;
+  - setores;
+  - etapas;
+  - templates de producao.
+- Isolamento multiempresa dos cadastros base.
+- Nomes iguais em empresas diferentes sem conflito.
+- Bloqueio de alteracao de registro de outra empresa.
+
+## Regras Obrigatorias Para Novos E2E
+
+- Todo modulo multiempresa deve ter teste E2E ou de integracao real garantindo que dados da Empresa A nao aparecem, nao conflitam e nao podem ser alterados pela Empresa B.
+- Quando um cadastro tiver unicidade por empresa, o teste deve validar dois comportamentos:
+  - a mesma empresa nao pode duplicar o registro;
+  - empresas diferentes podem usar o mesmo nome ou sigla sem conflito.
+- Fluxos CRUD devem cobrir, no minimo, listar, filtrar, criar, editar e excluir ou inativar.
+- Testes que validam regras de autorizacao ou isolamento devem usar backend real e banco E2E descartavel.
 
 ## Observacoes
 

@@ -48,6 +48,12 @@ Permissoes iniciais:
 - Visualizar dashboard operacional.
 - Reordenar fila de producao.
 - Visualizar riscos e impactos da fila.
+- Gerenciar configuracoes operacionais do primeiro incremento da Fase 1:
+  - unidades de medida;
+  - variaveis;
+  - setores;
+  - etapas;
+  - templates de producao.
 
 ## OPERATOR
 
@@ -78,3 +84,11 @@ Quando entrar no escopo, restricoes iniciais:
 - Na alteracao de senha, a senha so muda quando um novo valor e enviado.
 - `DELETE /users/:id` nao permite excluir o proprio usuario autenticado.
 - O backend nao deve permitir remover, rebaixar ou desativar o ultimo Administrador ativo da empresa.
+
+## Cadastros Base
+
+- `ADMIN` e `MANAGER` podem acessar os endpoints de `/master-data`.
+- `OPERATOR` nao acessa os endpoints de `/master-data` neste incremento.
+- Todas as operacoes de cadastros base usam o `companyId` da sessao autenticada.
+- Unicidade de nomes e siglas sempre considera a empresa atual.
+- `DELETE` nos endpoints de cadastros base executa inativacao logica (`isActive = false`).

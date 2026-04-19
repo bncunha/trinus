@@ -1,0 +1,23 @@
+<section class="settings-page">
+  <section class="app-panel">
+    <div class="settings-page__header">
+      <div>
+        <p class="app-section-label">Configurações</p>
+        <h2 class="app-section-title">Cadastros base</h2>
+        <p class="app-section-description">Configure os dados usados em etapas, templates e prazos.</p>
+      </div>
+      <span class="settings-page__loading" *ngIf="isLoading">Atualizando...</span>
+    </div>
+
+    <div class="settings-page__grid">
+      <a class="settings-page__card" *ngFor="let shortcut of shortcuts" [routerLink]="shortcut.route">
+        <span class="settings-page__card-main">
+          <strong>{{ shortcut.title }}</strong>
+          <span>{{ shortcut.description }}</span>
+        </span>
+        <span class="settings-page__badge">{{ shortcut.count }} cadastrados</span>
+        <span class="settings-page__action">Abrir</span>
+      </a>
+    </div>
+  </section>
+</section>

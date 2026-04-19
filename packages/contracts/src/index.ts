@@ -80,3 +80,103 @@ export interface CreateOrderInput {
 }
 
 export type UpdateOrderInput = Partial<CreateOrderInput>;
+
+export interface MeasurementUnit {
+  id: string;
+  name: string;
+  code: string;
+  isActive: boolean;
+}
+
+export interface CreateMeasurementUnitInput {
+  name: string;
+  code: string;
+  isActive?: boolean;
+}
+
+export type UpdateMeasurementUnitInput = Partial<CreateMeasurementUnitInput>;
+
+export interface Variable {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface CreateVariableInput {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export type UpdateVariableInput = Partial<CreateVariableInput>;
+
+export interface Sector {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface CreateSectorInput {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export type UpdateSectorInput = Partial<CreateSectorInput>;
+
+export interface Stage {
+  id: string;
+  name: string;
+  description?: string;
+  sectorId: string;
+  measurementUnitId: string;
+  capacityPerWorkday: number;
+  variableId?: string;
+  position: number;
+  isActive: boolean;
+}
+
+export interface CreateStageInput {
+  name: string;
+  description?: string;
+  sectorId: string;
+  measurementUnitId: string;
+  capacityPerWorkday: number;
+  variableId?: string;
+  position?: number;
+  isActive?: boolean;
+}
+
+export type UpdateStageInput = Partial<CreateStageInput>;
+
+export interface TemplateItem {
+  id: string;
+  stageId: string;
+  position: number;
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  items: TemplateItem[];
+}
+
+export interface CreateTemplateItemInput {
+  stageId: string;
+  position?: number;
+}
+
+export interface CreateTemplateInput {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+  items?: CreateTemplateItemInput[];
+}
+
+export interface UpdateTemplateInput extends Partial<Omit<CreateTemplateInput, 'items'>> {
+  items?: CreateTemplateItemInput[];
+}
