@@ -1,18 +1,14 @@
 import { defineConfig } from '@playwright/test';
 
-const devServerCommand =
-  process.platform === 'win32'
-    ? 'pnpm.cmd --filter @trinus/web exec ng serve --host 127.0.0.1 --port 4200'
-    : 'pnpm --filter @trinus/web exec ng serve --host 127.0.0.1 --port 4200';
-
 export default defineConfig({
   testDir: './e2e',
+  globalTeardown: './scripts/e2e-real-global-teardown.cjs',
   timeout: 60_000,
   expect: {
     timeout: 10_000
   },
   use: {
-    baseURL: 'http://127.0.0.1:4200',
+    baseURL: 'http://localhost:4201',
     trace: 'on-first-retry'
   },
   projects: [
@@ -23,10 +19,18 @@ export default defineConfig({
       }
     }
   ],
-  webServer: {
-    command: devServerCommand,
-    url: 'http://127.0.0.1:4200',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000
-  }
+  webServer: [
+    {
+      command: 'node scripts/start-api-e2e.cjs',
+      url: 'http://localhost:3001/health',
+      reuseExistingServer: false,
+      timeout: 240_000
+    },
+    {
+      command: 'node scripts/start-web-e2e.cjs',
+      url: 'http://localhost:4201',
+      reuseExistingServer: false,
+      timeout: 240_000
+    }
+  ]
 });

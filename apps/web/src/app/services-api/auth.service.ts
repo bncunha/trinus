@@ -3,8 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, map, of, tap } from 'rxjs';
 import type { AuthSession, LoginInput, RegisterAccountInput } from '@trinus/contracts';
+import { getApiBaseUrl } from './api-url';
 
-const AUTH_API_URL = 'http://localhost:3000/auth';
+const authApiUrl = () => `${getApiBaseUrl()}/auth`;
 
 export type SessionCheckResult =
   | { status: 'authenticated'; session: AuthSession }
@@ -35,7 +36,7 @@ export class AuthService {
   }
 
   checkSession(): Observable<SessionCheckResult> {
-    return this.http.get<AuthSession>(`${AUTH_API_URL}/session`, { withCredentials: true }).pipe(
+    return this.http.get<AuthSession>(`${authApiUrl()}/session`, { withCredentials: true }).pipe(
       tap((session) => this.sessionSubject.next(session)),
       map((session): SessionCheckResult => ({ status: 'authenticated', session })),
       catchError((error: unknown) => {
@@ -62,25 +63,25 @@ export class AuthService {
   }
 
   refreshSession(): Observable<AuthSession> {
-    return this.http.post<AuthSession>(`${AUTH_API_URL}/refresh`, {}, { withCredentials: true }).pipe(
+    return this.http.post<AuthSession>(`${authApiUrl()}/refresh`, {}, { withCredentials: true }).pipe(
       tap((session) => this.sessionSubject.next(session))
     );
   }
 
   login(input: LoginInput): Observable<AuthSession> {
-    return this.http.post<AuthSession>(`${AUTH_API_URL}/login`, input, { withCredentials: true }).pipe(
+    return this.http.post<AuthSession>(`${authApiUrl()}/login`, input, { withCredentials: true }).pipe(
       tap((session) => this.sessionSubject.next(session))
     );
   }
 
   register(input: RegisterAccountInput): Observable<AuthSession> {
-    return this.http.post<AuthSession>(`${AUTH_API_URL}/register`, input, { withCredentials: true }).pipe(
+    return this.http.post<AuthSession>(`${authApiUrl()}/register`, input, { withCredentials: true }).pipe(
       tap((session) => this.sessionSubject.next(session))
     );
   }
 
   logout(): Observable<void> {
-    return this.http.post<{ ok: true }>(`${AUTH_API_URL}/logout`, {}, { withCredentials: true }).pipe(
+    return this.http.post<{ ok: true }>(`${authApiUrl()}/logout`, {}, { withCredentials: true }).pipe(
       tap(() => this.clearSession()),
       map(() => undefined)
     );

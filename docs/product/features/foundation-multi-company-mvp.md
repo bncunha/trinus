@@ -81,15 +81,18 @@ A Fase 1 so deve iniciar quando a Fase 0 estiver validavel de ponta a ponta. Cad
   - falha de refresh redireciona para `/login`;
   - shell exibe usuario, empresa e papel formatado.
 - E2E coberto:
-  - registro de nova empresa;
-  - login;
-  - acesso a rota protegida;
-  - refresh de sessao;
-  - logout;
-  - tentativa de acessar dados de outra empresa sem sucesso.
+  - visitante anonimo redirecionado para login ao acessar rota protegida;
+  - registro de nova empresa e primeiro administrador contra backend real;
+  - cookies de sessao HTTP-only;
+  - refresh de sessao contra backend real;
+  - logout e login contra backend real;
+  - administrador criando usuarios `MANAGER` e `OPERATOR`;
+  - bloqueio de `/users` para `MANAGER`;
+  - redirecionamento de `OPERATOR` para `/minha-execucao`;
+  - isolamento de usuarios entre empresas no banco E2E.
 - `pnpm --filter @trinus/api exec jest --runInBand` passa.
 - `pnpm --filter @trinus/web exec jest --runInBand` passa.
-- `pnpm test:e2e` passa com cenarios autenticados.
+- `pnpm test:e2e` passa com cenarios autenticados contra backend real e banco E2E descartavel.
 - `pnpm build` passa.
 - `pnpm lint` ainda depende da criacao de `eslint.config.*` para ESLint 9 no workspace.
 
@@ -131,4 +134,4 @@ A Fase 1 so deve iniciar quando a Fase 0 estiver validavel de ponta a ponta. Cad
 - Validacao runtime de `role`.
 - Gestao minima de usuarios no frontend para `ADMIN`.
 - Testes cobrindo controllers, guards, roles e telas/servicos criticos de autenticacao.
-- E2E autenticado cobrindo criacao de conta, rota protegida e logout.
+- E2E real cobrindo criacao de conta, rota protegida, cookies HTTP-only, refresh, logout, login, gestao minima de usuarios e isolamento entre empresas.

@@ -18,6 +18,7 @@ Conteúdos esperados:
 - `routes.md`: rotas iniciais do frontend.
 - `security.md`: regras iniciais de segurança.
 - `naming.md`: regras de nomenclatura.
+- `e2e.md`: estrategia de testes E2E reais com banco descartavel.
 
 ## Frontend
 

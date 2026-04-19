@@ -10,6 +10,7 @@
     "dev:web": "pnpm --filter @trinus/web dev",
     "build": "pnpm -r --if-present build",
     "test:e2e": "playwright test",
+    "test:e2e:real": "playwright test",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint"
   },

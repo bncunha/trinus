@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import type { CreateOrderInput, Order, OrderStatus, UpdateOrderInput } from '@trinus/contracts';
+import { getApiBaseUrl } from './api-url';
 
-const ORDERS_API_URL = 'http://localhost:3000/orders';
+const ordersApiUrl = () => `${getApiBaseUrl()}/orders`;
 
 @Injectable({
   providedIn: 'root'
@@ -15,19 +16,19 @@ export class OrdersService {
   readonly orders$ = this.ordersSubject.asObservable();
 
   loadOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(ORDERS_API_URL, { withCredentials: true }).pipe(
+    return this.http.get<Order[]>(ordersApiUrl(), { withCredentials: true }).pipe(
       map((orders) => this.persistOrders(orders))
     );
   }
 
   createOrder(request: CreateOrderInput): Observable<Order> {
-    return this.http.post<Order>(ORDERS_API_URL, request, { withCredentials: true }).pipe(
+    return this.http.post<Order>(ordersApiUrl(), request, { withCredentials: true }).pipe(
       map((order) => this.persistOrder(order))
     );
   }
 
   updateOrder(id: string, request: UpdateOrderInput): Observable<Order> {
-    return this.http.patch<Order>(`${ORDERS_API_URL}/${id}`, request, { withCredentials: true }).pipe(
+    return this.http.patch<Order>(`${ordersApiUrl()}/${id}`, request, { withCredentials: true }).pipe(
       map((order) => this.persistOrder(order))
     );
   }
