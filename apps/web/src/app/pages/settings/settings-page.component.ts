@@ -40,6 +40,12 @@ export class SettingsPageComponent implements OnInit {
       count: 0
     },
     {
+      title: 'Tamanhos',
+      description: 'Cadastre tamanhos usados nos itens dos pedidos.',
+      route: '/configuracoes/tamanhos',
+      count: 0
+    },
+    {
       title: 'Setores',
       description: 'Organize as áreas produtivas da empresa.',
       route: '/configuracoes/setores',
@@ -68,14 +74,15 @@ export class SettingsPageComponent implements OnInit {
     forkJoin({
       units: this.masterDataService.listMeasurementUnits(),
       variables: this.masterDataService.listVariables(),
+      sizes: this.masterDataService.listSizes(),
       sectors: this.masterDataService.listSectors(),
       stages: this.masterDataService.listStages(),
       templates: this.masterDataService.listTemplates()
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ units, variables, sectors, stages, templates }) => {
-          const counts = [units.length, variables.length, sectors.length, stages.length, templates.length];
+        next: ({ units, variables, sizes, sectors, stages, templates }) => {
+          const counts = [units.length, variables.length, sizes.length, sectors.length, stages.length, templates.length];
           this.shortcuts = this.shortcuts.map((shortcut, index) => ({ ...shortcut, count: counts[index] }));
           this.isLoading = false;
           this.changeDetectorRef.markForCheck();

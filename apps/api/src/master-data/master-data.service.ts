@@ -1,7 +1,11 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import {
   Prisma,
+  type ClothingSize as ClothingSizeRecord,
+  type Customer as CustomerRecord,
   type MeasurementUnit as MeasurementUnitRecord,
+  type Product as ProductRecord,
+  type ProductVariableDefault as ProductVariableDefaultRecord,
   type Sector as SectorRecord,
   type Stage as StageRecord,
   type Template as TemplateRecord,
@@ -9,18 +13,29 @@ import {
   type Variable as VariableRecord
 } from '@prisma/client';
 import type {
+  ClothingSize,
+  CreateClothingSizeInput,
+  CreateCustomerInput,
   CreateMeasurementUnitInput,
+  CreateProductInput,
+  CreateProductVariableDefaultInput,
   CreateSectorInput,
   CreateStageInput,
   CreateTemplateInput,
   CreateTemplateItemInput,
   CreateVariableInput,
+  Customer,
   MeasurementUnit,
+  Product,
+  ProductVariableDefault,
   Sector,
   Stage,
   Template,
   TemplateItem,
+  UpdateClothingSizeInput,
+  UpdateCustomerInput,
   UpdateMeasurementUnitInput,
+  UpdateProductInput,
   UpdateSectorInput,
   UpdateStageInput,
   UpdateTemplateInput,
@@ -31,6 +46,10 @@ import { PrismaService } from '../prisma/prisma.service';
 
 type TemplateRecordWithItems = TemplateRecord & {
   items: TemplateItemRecord[];
+};
+
+type ProductRecordWithDefaults = ProductRecord & {
+  variableDefaults: ProductVariableDefaultRecord[];
 };
 
 @Injectable()
@@ -164,6 +183,64 @@ export class MasterDataService {
 
   async deleteVariable(companyId: string, id: string): Promise<Variable | null> {
     return this.deactivateRecord(companyId, id, this.prisma.variable, this.toVariable);
+  }
+
+  async listSizes(companyId: string): Promise<ClothingSize[]> {
+    const records = await this.prisma.clothingSize.findMany({
+      orderBy: [{ name: 'asc' }],
+      where: { companyId }
+    });
+
+    return records.map((record) => this.toClothingSize(record));
+  }
+
+  async findSize(companyId: string, id: string): Promise<ClothingSize | null> {
+    const record = await this.prisma.clothingSize.findFirst({ where: { companyId, id } });
+    return record ? this.toClothingSize(record) : null;
+  }
+
+  async createSize(companyId: string, input: CreateClothingSizeInput): Promise<ClothingSize> {
+    this.validateName(input.name);
+
+    const record = await this.catchUniqueConflict(() =>
+      this.prisma.clothingSize.create({
+        data: {
+          companyId,
+          name: input.name.trim(),
+          isActive: input.isActive ?? true
+        }
+      })
+    );
+
+    return this.toClothingSize(record);
+  }
+
+  async updateSize(companyId: string, id: string, input: UpdateClothingSizeInput): Promise<ClothingSize | null> {
+    const current = await this.prisma.clothingSize.findFirst({ where: { companyId, id } });
+
+    if (!current) {
+      return null;
+    }
+
+    if (input.name !== undefined) {
+      this.validateName(input.name);
+    }
+
+    const record = await this.catchUniqueConflict(() =>
+      this.prisma.clothingSize.update({
+        data: {
+          name: input.name?.trim(),
+          isActive: input.isActive
+        },
+        where: { id: current.id }
+      })
+    );
+
+    return this.toClothingSize(record);
+  }
+
+  async deleteSize(companyId: string, id: string): Promise<ClothingSize | null> {
+    return this.deactivateRecord(companyId, id, this.prisma.clothingSize, this.toClothingSize);
   }
 
   async listSectors(companyId: string): Promise<Sector[]> {
@@ -423,12 +500,220 @@ export class MasterDataService {
     return this.toTemplate(record);
   }
 
+  async listCustomers(companyId: string): Promise<Customer[]> {
+    const records = await this.prisma.customer.findMany({
+      orderBy: [{ name: 'asc' }],
+      where: { companyId }
+    });
+
+    return records.map((record) => this.toCustomer(record));
+  }
+
+  async findCustomer(companyId: string, id: string): Promise<Customer | null> {
+    const record = await this.prisma.customer.findFirst({ where: { companyId, id } });
+    return record ? this.toCustomer(record) : null;
+  }
+
+  async createCustomer(companyId: string, input: CreateCustomerInput): Promise<Customer> {
+    this.validateCustomerInput(input);
+
+    const record = await this.catchUniqueConflict(() =>
+      this.prisma.customer.create({
+        data: {
+          companyId,
+          name: input.name.trim(),
+          cpf: this.optionalTrim(input.cpf),
+          cnpj: this.optionalTrim(input.cnpj),
+          address: this.optionalTrim(input.address),
+          mobilePhone: this.optionalTrim(input.mobilePhone),
+          landlinePhone: this.optionalTrim(input.landlinePhone),
+          isActive: input.isActive ?? true
+        }
+      })
+    );
+
+    return this.toCustomer(record);
+  }
+
+  async updateCustomer(companyId: string, id: string, input: UpdateCustomerInput): Promise<Customer | null> {
+    const current = await this.prisma.customer.findFirst({ where: { companyId, id } });
+
+    if (!current) {
+      return null;
+    }
+
+    this.validateCustomerUpdateInput(input);
+
+    const record = await this.catchUniqueConflict(() =>
+      this.prisma.customer.update({
+        data: {
+          name: input.name?.trim(),
+          cpf: input.cpf === undefined ? undefined : this.optionalTrim(input.cpf),
+          cnpj: input.cnpj === undefined ? undefined : this.optionalTrim(input.cnpj),
+          address: input.address === undefined ? undefined : this.optionalTrim(input.address),
+          mobilePhone: input.mobilePhone === undefined ? undefined : this.optionalTrim(input.mobilePhone),
+          landlinePhone: input.landlinePhone === undefined ? undefined : this.optionalTrim(input.landlinePhone),
+          isActive: input.isActive
+        },
+        where: { id: current.id }
+      })
+    );
+
+    return this.toCustomer(record);
+  }
+
+  async deleteCustomer(companyId: string, id: string): Promise<Customer | null> {
+    return this.deactivateRecord(companyId, id, this.prisma.customer, this.toCustomer);
+  }
+
+  async listProducts(companyId: string): Promise<Product[]> {
+    const records = await this.prisma.product.findMany({
+      include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } },
+      orderBy: [{ name: 'asc' }],
+      where: { companyId }
+    });
+
+    return records.map((record) => this.toProduct(record));
+  }
+
+  async findProduct(companyId: string, id: string): Promise<Product | null> {
+    const record = await this.prisma.product.findFirst({
+      include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } },
+      where: { companyId, id }
+    });
+
+    return record ? this.toProduct(record) : null;
+  }
+
+  async createProduct(companyId: string, input: CreateProductInput): Promise<Product> {
+    this.validateProductInput(input);
+    await this.validateProductVariableDefaults(companyId, input.variableDefaults ?? []);
+
+    const record = await this.catchUniqueConflict(() =>
+      this.prisma.product.create({
+        data: {
+          companyId,
+          name: input.name.trim(),
+          costPrice: input.costPrice,
+          salePrice: input.salePrice,
+          isActive: input.isActive ?? true,
+          variableDefaults: {
+            create: this.toProductVariableDefaultNestedCreateData(input.variableDefaults ?? [])
+          }
+        },
+        include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } }
+      })
+    );
+
+    return this.toProduct(record);
+  }
+
+  async updateProduct(companyId: string, id: string, input: UpdateProductInput): Promise<Product | null> {
+    const current = await this.prisma.product.findFirst({ where: { companyId, id } });
+
+    if (!current) {
+      return null;
+    }
+
+    this.validateProductUpdateInput(input);
+
+    if (input.variableDefaults !== undefined) {
+      await this.validateProductVariableDefaults(companyId, input.variableDefaults);
+    }
+
+    const record = await this.catchUniqueConflict(() =>
+      this.prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
+        await transaction.product.update({
+          data: {
+            name: input.name?.trim(),
+            costPrice: input.costPrice,
+            salePrice: input.salePrice,
+            isActive: input.isActive
+          },
+          where: { id: current.id }
+        });
+
+        if (input.variableDefaults !== undefined) {
+          await transaction.productVariableDefault.deleteMany({ where: { productId: current.id } });
+
+          if (input.variableDefaults.length > 0) {
+            await transaction.productVariableDefault.createMany({
+              data: this.toProductVariableDefaultCreateManyData(current.id, input.variableDefaults)
+            });
+          }
+        }
+
+        const updated = await transaction.product.findUnique({
+          include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } },
+          where: { id: current.id }
+        });
+
+        if (!updated) {
+          throw new BadRequestException('Produto nÃ£o encontrado.');
+        }
+
+        return updated;
+      })
+    );
+
+    return this.toProduct(record);
+  }
+
+  async deleteProduct(companyId: string, id: string): Promise<Product | null> {
+    const current = await this.prisma.product.findFirst({
+      include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } },
+      where: { companyId, id }
+    });
+
+    if (!current) {
+      return null;
+    }
+
+    const record = await this.prisma.product.update({
+      data: { isActive: false },
+      include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } },
+      where: { id: current.id }
+    });
+
+    return this.toProduct(record);
+  }
+
   private validateStageInput(input: CreateStageInput): void {
     this.validateName(input.name);
     this.validateRequiredId(input.sectorId, 'Setor é obrigatório.');
     this.validateRequiredId(input.measurementUnitId, 'Unidade de medida é obrigatória.');
     this.validateCapacity(input.capacityPerWorkday);
     this.validatePosition(input.position);
+  }
+
+  private validateCustomerInput(input: CreateCustomerInput): void {
+    this.validateName(input.name);
+  }
+
+  private validateCustomerUpdateInput(input: UpdateCustomerInput): void {
+    if (input.name !== undefined) {
+      this.validateName(input.name);
+    }
+  }
+
+  private validateProductInput(input: CreateProductInput): void {
+    this.validateName(input.name);
+    this.validateMoney(input.costPrice, 'Custo do produto deve ser maior ou igual a zero.');
+    this.validateMoney(input.salePrice, 'PreÃ§o de venda deve ser maior ou igual a zero.');
+  }
+
+  private validateProductUpdateInput(input: UpdateProductInput): void {
+    if (input.name !== undefined) {
+      this.validateName(input.name);
+    }
+
+    if (input.costPrice !== undefined) {
+      this.validateMoney(input.costPrice, 'Custo do produto deve ser maior ou igual a zero.');
+    }
+
+    if (input.salePrice !== undefined) {
+      this.validateMoney(input.salePrice, 'PreÃ§o de venda deve ser maior ou igual a zero.');
+    }
   }
 
   private validateStageUpdateInput(input: UpdateStageInput): void {
@@ -491,6 +776,42 @@ export class MasterDataService {
     }
   }
 
+  private async validateProductVariableDefaults(
+    companyId: string,
+    defaults: CreateProductVariableDefaultInput[]
+  ): Promise<void> {
+    if (defaults.length === 0) {
+      return;
+    }
+
+    const variableIds = defaults.map((item) => item.variableId?.trim());
+
+    if (variableIds.some((variableId) => !variableId?.trim())) {
+      throw new BadRequestException('VariÃ¡vel do produto Ã© obrigatÃ³ria.');
+    }
+
+    for (const item of defaults) {
+      this.validatePositiveDecimal(item.value, 'Valor padrÃ£o da variÃ¡vel deve ser maior que zero.');
+    }
+
+    if (new Set(variableIds).size !== variableIds.length) {
+      throw new BadRequestException('VariÃ¡vel padrÃ£o nÃ£o pode repetir no mesmo produto.');
+    }
+
+    const variables = await this.prisma.variable.findMany({
+      select: { id: true },
+      where: {
+        companyId,
+        id: { in: variableIds },
+        isActive: true
+      }
+    });
+
+    if (variables.length !== variableIds.length) {
+      throw new BadRequestException('Uma ou mais variÃ¡veis informadas nÃ£o existem ou estÃ£o inativas.');
+    }
+  }
+
   private async validateTemplateItems(companyId: string, items: CreateTemplateItemInput[]): Promise<void> {
     if (items.length === 0) {
       return;
@@ -548,6 +869,26 @@ export class MasterDataService {
     }
   }
 
+  private validateMoney(value: number | undefined, message: string): void {
+    if (!Number.isFinite(value) || Number(value) < 0) {
+      throw new BadRequestException(message);
+    }
+
+    if (!/^\d+(\.\d{1,2})?$/.test(String(value))) {
+      throw new BadRequestException('Valor monetÃ¡rio aceita no mÃ¡ximo 2 casas decimais.');
+    }
+  }
+
+  private validatePositiveDecimal(value: number | undefined, message: string): void {
+    if (!Number.isFinite(value) || Number(value) <= 0) {
+      throw new BadRequestException(message);
+    }
+
+    if (!/^\d+(\.\d{1,2})?$/.test(String(value))) {
+      throw new BadRequestException('Valor aceita no mÃ¡ximo 2 casas decimais.');
+    }
+  }
+
   private validatePosition(position: number | undefined): void {
     if (position === undefined) {
       return;
@@ -588,6 +929,26 @@ export class MasterDataService {
       templateId,
       stageId: item.stageId.trim(),
       position: item.position ?? index
+    }));
+  }
+
+  private toProductVariableDefaultNestedCreateData(
+    defaults: CreateProductVariableDefaultInput[]
+  ): Prisma.ProductVariableDefaultCreateWithoutProductInput[] {
+    return defaults.map((item) => ({
+      variable: { connect: { id: item.variableId.trim() } },
+      value: item.value
+    }));
+  }
+
+  private toProductVariableDefaultCreateManyData(
+    productId: string,
+    defaults: CreateProductVariableDefaultInput[]
+  ): Prisma.ProductVariableDefaultCreateManyInput[] {
+    return defaults.map((item) => ({
+      productId,
+      variableId: item.variableId.trim(),
+      value: item.value
     }));
   }
 
@@ -644,6 +1005,14 @@ export class MasterDataService {
     };
   }
 
+  private toClothingSize(record: ClothingSizeRecord): ClothingSize {
+    return {
+      id: record.id,
+      name: record.name,
+      isActive: record.isActive
+    };
+  }
+
   private toSector(record: SectorRecord): Sector {
     return {
       id: record.id,
@@ -682,6 +1051,38 @@ export class MasterDataService {
       id: record.id,
       stageId: record.stageId,
       position: record.position
+    };
+  }
+
+  private toCustomer(record: CustomerRecord): Customer {
+    return {
+      id: record.id,
+      name: record.name,
+      cpf: record.cpf ?? undefined,
+      cnpj: record.cnpj ?? undefined,
+      address: record.address ?? undefined,
+      mobilePhone: record.mobilePhone ?? undefined,
+      landlinePhone: record.landlinePhone ?? undefined,
+      isActive: record.isActive
+    };
+  }
+
+  private toProduct(record: ProductRecordWithDefaults): Product {
+    return {
+      id: record.id,
+      name: record.name,
+      costPrice: Number(record.costPrice),
+      salePrice: Number(record.salePrice),
+      isActive: record.isActive,
+      variableDefaults: record.variableDefaults.map((item) => this.toProductVariableDefault(item))
+    };
+  }
+
+  private toProductVariableDefault(record: ProductVariableDefaultRecord): ProductVariableDefault {
+    return {
+      id: record.id,
+      variableId: record.variableId,
+      value: Number(record.value)
     };
   }
 }

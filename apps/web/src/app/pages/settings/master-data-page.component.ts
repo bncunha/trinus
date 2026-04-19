@@ -4,12 +4,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import type {
+  ClothingSize,
+  CreateClothingSizeInput,
+  CreateCustomerInput,
   CreateMeasurementUnitInput,
+  CreateProductInput,
   CreateSectorInput,
   CreateStageInput,
   CreateTemplateInput,
   CreateVariableInput,
+  Customer,
   MeasurementUnit,
+  Product,
   Sector,
   Stage,
   Template,
@@ -22,8 +28,8 @@ import { FormFieldErrorComponent } from '../../shared/form-field-error.component
 import { SharedListComponent } from '../../shared/shared-list.component';
 import { ToastService } from '../../shared/toast.service';
 
-type MasterDataKind = 'measurement-units' | 'variables' | 'sectors' | 'stages' | 'templates';
-type MasterDataRecord = MeasurementUnit | Variable | Sector | Stage | Template;
+type MasterDataKind = 'measurement-units' | 'variables' | 'sizes' | 'sectors' | 'stages' | 'templates' | 'customers' | 'products';
+type MasterDataRecord = MeasurementUnit | Variable | ClothingSize | Sector | Stage | Template | Customer | Product;
 type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 
 const PAGE_CONFIG: Record<MasterDataKind, { title: string; description: string; createLabel: string; empty: string }> = {
@@ -38,6 +44,12 @@ const PAGE_CONFIG: Record<MasterDataKind, { title: string; description: string; 
     description: 'Cadastre parâmetros numéricos simples usados em etapas e pedidos.',
     createLabel: 'Nova variável',
     empty: 'Nenhuma variável cadastrada.'
+  },
+  sizes: {
+    title: 'Tamanhos',
+    description: 'Cadastre tamanhos usados nos itens dos pedidos.',
+    createLabel: 'Novo tamanho',
+    empty: 'Nenhum tamanho cadastrado.'
   },
   sectors: {
     title: 'Setores',
@@ -56,6 +68,18 @@ const PAGE_CONFIG: Record<MasterDataKind, { title: string; description: string; 
     description: 'Monte fluxos recorrentes com etapas em ordem.',
     createLabel: 'Novo template',
     empty: 'Nenhum template cadastrado.'
+  },
+  customers: {
+    title: 'Clientes',
+    description: 'Cadastre clientes usados nos pedidos.',
+    createLabel: 'Novo cliente',
+    empty: 'Nenhum cliente cadastrado.'
+  },
+  products: {
+    title: 'Produtos',
+    description: 'Cadastre produtos, precos e variaveis padrao.',
+    createLabel: 'Novo produto',
+    empty: 'Nenhum produto cadastrado.'
   }
 };
 
@@ -81,8 +105,11 @@ export class MasterDataPageComponent implements OnInit {
   protected records: MasterDataRecord[] = [];
   protected units: MeasurementUnit[] = [];
   protected variables: Variable[] = [];
+  protected sizes: ClothingSize[] = [];
   protected sectors: Sector[] = [];
   protected stages: Stage[] = [];
+  protected customers: Customer[] = [];
+  protected products: Product[] = [];
   protected isLoading = false;
   protected isSaving = false;
   protected isDrawerOpen = false;
@@ -99,6 +126,10 @@ export class MasterDataPageComponent implements OnInit {
   protected readonly variableForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(80)]],
     description: ['', [Validators.maxLength(160)]],
+    isActive: true
+  });
+  protected readonly sizeForm = this.formBuilder.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(80)]],
     isActive: true
   });
   protected readonly sectorForm = this.formBuilder.nonNullable.group({
@@ -122,6 +153,22 @@ export class MasterDataPageComponent implements OnInit {
     isActive: true,
     items: this.formBuilder.array([this.createTemplateItemGroup()])
   });
+  protected readonly customerForm = this.formBuilder.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(120)]],
+    cpf: ['', [Validators.maxLength(20)]],
+    cnpj: ['', [Validators.maxLength(24)]],
+    address: ['', [Validators.maxLength(160)]],
+    mobilePhone: ['', [Validators.maxLength(24)]],
+    landlinePhone: ['', [Validators.maxLength(24)]],
+    isActive: true
+  });
+  protected readonly productForm = this.formBuilder.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(120)]],
+    costPrice: [0, [Validators.required, Validators.min(0)]],
+    salePrice: [0, [Validators.required, Validators.min(0)]],
+    isActive: true,
+    variableDefaults: this.formBuilder.array([this.createProductVariableDefaultGroup()])
+  });
 
   ngOnInit(): void {
     this.route.data.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
@@ -134,6 +181,22 @@ export class MasterDataPageComponent implements OnInit {
 
   protected get templateItems(): FormArray {
     return this.templateForm.controls.items;
+  }
+
+  protected get productVariableDefaults(): FormArray {
+    return this.productForm.controls.variableDefaults;
+  }
+
+  protected get backLink(): string {
+    return this.kind === 'customers' || this.kind === 'products' ? '/dashboard' : '/configuracoes';
+  }
+
+  protected get backLabel(): string {
+    return this.kind === 'customers' || this.kind === 'products' ? 'Voltar para dashboard' : 'Voltar para configuracoes';
+  }
+
+  protected get sectionLabel(): string {
+    return this.kind === 'customers' || this.kind === 'products' ? 'Cadastros' : 'Cadastros base';
   }
 
   protected get filteredRecords(): MasterDataRecord[] {
@@ -167,9 +230,12 @@ export class MasterDataPageComponent implements OnInit {
   protected get activeFormInvalid(): boolean {
     if (this.kind === 'measurement-units') return this.unitForm.invalid;
     if (this.kind === 'variables') return this.variableForm.invalid;
+    if (this.kind === 'sizes') return this.sizeForm.invalid;
     if (this.kind === 'sectors') return this.sectorForm.invalid;
     if (this.kind === 'stages') return this.stageForm.invalid;
-    return this.templateForm.invalid;
+    if (this.kind === 'templates') return this.templateForm.invalid;
+    if (this.kind === 'customers') return this.customerForm.invalid;
+    return this.productForm.invalid;
   }
 
   protected get selectableSectors(): Sector[] {
@@ -186,6 +252,10 @@ export class MasterDataPageComponent implements OnInit {
 
   protected selectableStagesFor(stageId: string): Stage[] {
     return this.activeOrSelected(this.stages, stageId);
+  }
+
+  protected selectableVariablesFor(variableId: string): Variable[] {
+    return this.activeOrSelected(this.variables, variableId);
   }
 
   protected clearFilters(): void {
@@ -217,6 +287,10 @@ export class MasterDataPageComponent implements OnInit {
     this.templateItems.push(this.createTemplateItemGroup());
   }
 
+  protected addProductVariableDefault(): void {
+    this.productVariableDefaults.push(this.createProductVariableDefaultGroup());
+  }
+
   protected removeTemplateItem(index: number): void {
     if (this.templateItems.length <= 1) {
       this.templateItems.at(0).reset({ stageId: '' });
@@ -233,6 +307,16 @@ export class MasterDataPageComponent implements OnInit {
 
   protected moveTemplateItemDown(index: number): void {
     this.moveTemplateItem(index, index + 1);
+  }
+
+  protected removeProductVariableDefault(index: number): void {
+    if (this.productVariableDefaults.length <= 1) {
+      this.productVariableDefaults.at(0).reset({ variableId: '', value: 1 });
+      return;
+    }
+
+    this.productVariableDefaults.removeAt(index);
+    this.productVariableDefaults.markAsDirty();
   }
 
   protected submitFromKeyboard(event: Event): void {
@@ -299,6 +383,20 @@ export class MasterDataPageComponent implements OnInit {
       return `Sigla: ${(record as MeasurementUnit).code}`;
     }
 
+    if (this.kind === 'sizes') {
+      return 'Tamanho de vestuario';
+    }
+
+    if (this.kind === 'customers') {
+      const customer = record as Customer;
+      return customer.cpf || customer.cnpj || customer.mobilePhone || 'Sem documento';
+    }
+
+    if (this.kind === 'products') {
+      const product = record as Product;
+      return `Venda: R$ ${product.salePrice.toFixed(2)} - ${product.variableDefaults.length} variaveis`;
+    }
+
     if (this.kind === 'stages') {
       const stage = record as Stage;
       const sector = this.sectors.find((item) => item.id === stage.sectorId)?.name ?? 'Setor';
@@ -322,18 +420,24 @@ export class MasterDataPageComponent implements OnInit {
     forkJoin({
       units: this.masterDataService.listMeasurementUnits(),
       variables: this.masterDataService.listVariables(),
+      sizes: this.masterDataService.listSizes(),
       sectors: this.masterDataService.listSectors(),
       stages: this.masterDataService.listStages(),
-      templates: this.masterDataService.listTemplates()
+      templates: this.masterDataService.listTemplates(),
+      customers: this.masterDataService.listCustomers(),
+      products: this.masterDataService.listProducts()
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ units, variables, sectors, stages, templates }) => {
+        next: ({ units, variables, sizes, sectors, stages, templates, customers, products }) => {
           this.units = units;
           this.variables = variables;
+          this.sizes = sizes;
           this.sectors = sectors;
           this.stages = stages;
-          this.records = this.recordsForKind(units, variables, sectors, stages, templates);
+          this.customers = customers;
+          this.products = products;
+          this.records = this.recordsForKind(units, variables, sizes, sectors, stages, templates, customers, products);
           this.isLoading = false;
           this.changeDetectorRef.markForCheck();
         },
@@ -348,15 +452,21 @@ export class MasterDataPageComponent implements OnInit {
   private recordsForKind(
     units: MeasurementUnit[],
     variables: Variable[],
+    sizes: ClothingSize[],
     sectors: Sector[],
     stages: Stage[],
-    templates: Template[]
+    templates: Template[],
+    customers: Customer[],
+    products: Product[]
   ): MasterDataRecord[] {
     if (this.kind === 'measurement-units') return units;
     if (this.kind === 'variables') return variables;
+    if (this.kind === 'sizes') return sizes;
     if (this.kind === 'sectors') return sectors;
     if (this.kind === 'stages') return stages;
-    return templates;
+    if (this.kind === 'templates') return templates;
+    if (this.kind === 'customers') return customers;
+    return products;
   }
 
   private resetActiveForm(record?: MasterDataRecord | null): void {
@@ -370,6 +480,9 @@ export class MasterDataPageComponent implements OnInit {
         description: variable?.description ?? '',
         isActive: variable?.isActive ?? true
       });
+    } else if (this.kind === 'sizes') {
+      const size = record as ClothingSize | undefined;
+      this.sizeForm.reset({ name: size?.name ?? '', isActive: size?.isActive ?? true });
     } else if (this.kind === 'sectors') {
       const sector = record as Sector | undefined;
       this.sectorForm.reset({
@@ -389,7 +502,7 @@ export class MasterDataPageComponent implements OnInit {
         position: stage?.position ?? 0,
         isActive: stage?.isActive ?? true
       });
-    } else {
+    } else if (this.kind === 'templates') {
       const template = record as Template | undefined;
       this.templateItems.clear();
       const items = template?.items.length ? template.items : [{ stageId: '', position: 0 }];
@@ -400,6 +513,30 @@ export class MasterDataPageComponent implements OnInit {
         name: template?.name ?? '',
         description: template?.description ?? '',
         isActive: template?.isActive ?? true
+      });
+    } else if (this.kind === 'customers') {
+      const customer = record as Customer | undefined;
+      this.customerForm.reset({
+        name: customer?.name ?? '',
+        cpf: customer?.cpf ?? '',
+        cnpj: customer?.cnpj ?? '',
+        address: customer?.address ?? '',
+        mobilePhone: customer?.mobilePhone ?? '',
+        landlinePhone: customer?.landlinePhone ?? '',
+        isActive: customer?.isActive ?? true
+      });
+    } else {
+      const product = record as Product | undefined;
+      this.productVariableDefaults.clear();
+      const defaults = product?.variableDefaults.length ? product.variableDefaults : [{ variableId: '', value: 1 }];
+      for (const item of defaults) {
+        this.productVariableDefaults.push(this.createProductVariableDefaultGroup(item.variableId, item.value));
+      }
+      this.productForm.reset({
+        name: product?.name ?? '',
+        costPrice: product?.costPrice ?? 0,
+        salePrice: product?.salePrice ?? 0,
+        isActive: product?.isActive ?? true
       });
     }
   }
@@ -413,6 +550,10 @@ export class MasterDataPageComponent implements OnInit {
       return this.masterDataService.createVariable(this.variableForm.getRawValue() as CreateVariableInput);
     }
 
+    if (this.kind === 'sizes') {
+      return this.masterDataService.createSize(this.sizeForm.getRawValue() as CreateClothingSizeInput);
+    }
+
     if (this.kind === 'sectors') {
       return this.masterDataService.createSector(this.sectorForm.getRawValue() as CreateSectorInput);
     }
@@ -421,7 +562,15 @@ export class MasterDataPageComponent implements OnInit {
       return this.masterDataService.createStage(this.normalizeStageInput());
     }
 
-    return this.masterDataService.createTemplate(this.normalizeTemplateInput());
+    if (this.kind === 'templates') {
+      return this.masterDataService.createTemplate(this.normalizeTemplateInput());
+    }
+
+    if (this.kind === 'customers') {
+      return this.masterDataService.createCustomer(this.customerForm.getRawValue() as CreateCustomerInput);
+    }
+
+    return this.masterDataService.createProduct(this.normalizeProductInput());
   }
 
   private updateCurrentRecord(): Observable<MasterDataRecord> {
@@ -435,6 +584,10 @@ export class MasterDataPageComponent implements OnInit {
       return this.masterDataService.updateVariable(id, this.variableForm.getRawValue());
     }
 
+    if (this.kind === 'sizes') {
+      return this.masterDataService.updateSize(id, this.sizeForm.getRawValue());
+    }
+
     if (this.kind === 'sectors') {
       return this.masterDataService.updateSector(id, this.sectorForm.getRawValue());
     }
@@ -443,15 +596,26 @@ export class MasterDataPageComponent implements OnInit {
       return this.masterDataService.updateStage(id, this.normalizeStageInput());
     }
 
-    return this.masterDataService.updateTemplate(id, this.normalizeTemplateInput());
+    if (this.kind === 'templates') {
+      return this.masterDataService.updateTemplate(id, this.normalizeTemplateInput());
+    }
+
+    if (this.kind === 'customers') {
+      return this.masterDataService.updateCustomer(id, this.customerForm.getRawValue());
+    }
+
+    return this.masterDataService.updateProduct(id, this.normalizeProductInput());
   }
 
   private deleteCurrentRecord(record: MasterDataRecord): Observable<MasterDataRecord> {
     if (this.kind === 'measurement-units') return this.masterDataService.deleteMeasurementUnit(record.id);
     if (this.kind === 'variables') return this.masterDataService.deleteVariable(record.id);
+    if (this.kind === 'sizes') return this.masterDataService.deleteSize(record.id);
     if (this.kind === 'sectors') return this.masterDataService.deleteSector(record.id);
     if (this.kind === 'stages') return this.masterDataService.deleteStage(record.id);
-    return this.masterDataService.deleteTemplate(record.id);
+    if (this.kind === 'templates') return this.masterDataService.deleteTemplate(record.id);
+    if (this.kind === 'customers') return this.masterDataService.deleteCustomer(record.id);
+    return this.masterDataService.deleteProduct(record.id);
   }
 
   private normalizeStageInput(): CreateStageInput {
@@ -481,6 +645,23 @@ export class MasterDataPageComponent implements OnInit {
     };
   }
 
+  private normalizeProductInput(): CreateProductInput {
+    const value = this.productForm.getRawValue();
+
+    return {
+      name: value.name,
+      costPrice: Number(value.costPrice),
+      salePrice: Number(value.salePrice),
+      isActive: value.isActive,
+      variableDefaults: value.variableDefaults
+        .filter((item) => item.variableId)
+        .map((item) => ({
+          variableId: item.variableId,
+          value: Number(item.value)
+        }))
+    };
+  }
+
   private upsertRecord(record: MasterDataRecord): void {
     const existing = this.records.some((item) => item.id === record.id);
     this.records = existing
@@ -491,15 +672,25 @@ export class MasterDataPageComponent implements OnInit {
   private markActiveFormTouched(): void {
     if (this.kind === 'measurement-units') this.unitForm.markAllAsTouched();
     else if (this.kind === 'variables') this.variableForm.markAllAsTouched();
+    else if (this.kind === 'sizes') this.sizeForm.markAllAsTouched();
     else if (this.kind === 'sectors') this.sectorForm.markAllAsTouched();
     else if (this.kind === 'stages') this.stageForm.markAllAsTouched();
-    else this.templateForm.markAllAsTouched();
+    else if (this.kind === 'templates') this.templateForm.markAllAsTouched();
+    else if (this.kind === 'customers') this.customerForm.markAllAsTouched();
+    else this.productForm.markAllAsTouched();
   }
 
   private createTemplateItemGroup(stageId = '', position = 0) {
     return this.formBuilder.nonNullable.group({
       stageId: [stageId, [Validators.required]],
       position
+    });
+  }
+
+  private createProductVariableDefaultGroup(variableId = '', value = 1) {
+    return this.formBuilder.nonNullable.group({
+      variableId,
+      value: [value, [Validators.required, Validators.min(0.01)]]
     });
   }
 

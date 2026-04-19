@@ -1,15 +1,24 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import type {
+  ClothingSize,
+  CreateClothingSizeInput,
+  CreateCustomerInput,
   CreateMeasurementUnitInput,
+  CreateProductInput,
   CreateSectorInput,
   CreateStageInput,
   CreateTemplateInput,
   CreateVariableInput,
+  Customer,
   MeasurementUnit,
+  Product,
   Sector,
   Stage,
   Template,
+  UpdateClothingSizeInput,
+  UpdateCustomerInput,
   UpdateMeasurementUnitInput,
+  UpdateProductInput,
   UpdateSectorInput,
   UpdateStageInput,
   UpdateTemplateInput,
@@ -93,6 +102,38 @@ export class MasterDataController {
   async deleteVariable(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Variable> {
     const record = await this.masterDataService.deleteVariable(request.auth.user.companyId, id);
     return this.returnOrThrow(record, 'Variável não encontrada.');
+  }
+
+  @Get('sizes')
+  getSizes(@Req() request: RequestWithAuth): Promise<ClothingSize[]> {
+    return this.masterDataService.listSizes(request.auth.user.companyId);
+  }
+
+  @Get('sizes/:id')
+  async getSize(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<ClothingSize> {
+    const record = await this.masterDataService.findSize(request.auth.user.companyId, id);
+    return this.returnOrThrow(record, 'Tamanho nao encontrado.');
+  }
+
+  @Post('sizes')
+  createSize(@Req() request: RequestWithAuth, @Body() body: CreateClothingSizeInput): Promise<ClothingSize> {
+    return this.masterDataService.createSize(request.auth.user.companyId, body);
+  }
+
+  @Patch('sizes/:id')
+  async updateSize(
+    @Req() request: RequestWithAuth,
+    @Param('id') id: string,
+    @Body() body: UpdateClothingSizeInput
+  ): Promise<ClothingSize> {
+    const record = await this.masterDataService.updateSize(request.auth.user.companyId, id, body);
+    return this.returnOrThrow(record, 'Tamanho nao encontrado.');
+  }
+
+  @Delete('sizes/:id')
+  async deleteSize(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<ClothingSize> {
+    const record = await this.masterDataService.deleteSize(request.auth.user.companyId, id);
+    return this.returnOrThrow(record, 'Tamanho nao encontrado.');
   }
 
   @Get('sectors')
@@ -189,6 +230,70 @@ export class MasterDataController {
   async deleteTemplate(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Template> {
     const record = await this.masterDataService.deleteTemplate(request.auth.user.companyId, id);
     return this.returnOrThrow(record, 'Template não encontrado.');
+  }
+
+  @Get('customers')
+  getCustomers(@Req() request: RequestWithAuth): Promise<Customer[]> {
+    return this.masterDataService.listCustomers(request.auth.user.companyId);
+  }
+
+  @Get('customers/:id')
+  async getCustomer(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Customer> {
+    const record = await this.masterDataService.findCustomer(request.auth.user.companyId, id);
+    return this.returnOrThrow(record, 'Cliente nao encontrado.');
+  }
+
+  @Post('customers')
+  createCustomer(@Req() request: RequestWithAuth, @Body() body: CreateCustomerInput): Promise<Customer> {
+    return this.masterDataService.createCustomer(request.auth.user.companyId, body);
+  }
+
+  @Patch('customers/:id')
+  async updateCustomer(
+    @Req() request: RequestWithAuth,
+    @Param('id') id: string,
+    @Body() body: UpdateCustomerInput
+  ): Promise<Customer> {
+    const record = await this.masterDataService.updateCustomer(request.auth.user.companyId, id, body);
+    return this.returnOrThrow(record, 'Cliente nao encontrado.');
+  }
+
+  @Delete('customers/:id')
+  async deleteCustomer(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Customer> {
+    const record = await this.masterDataService.deleteCustomer(request.auth.user.companyId, id);
+    return this.returnOrThrow(record, 'Cliente nao encontrado.');
+  }
+
+  @Get('products')
+  getProducts(@Req() request: RequestWithAuth): Promise<Product[]> {
+    return this.masterDataService.listProducts(request.auth.user.companyId);
+  }
+
+  @Get('products/:id')
+  async getProduct(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Product> {
+    const record = await this.masterDataService.findProduct(request.auth.user.companyId, id);
+    return this.returnOrThrow(record, 'Produto nao encontrado.');
+  }
+
+  @Post('products')
+  createProduct(@Req() request: RequestWithAuth, @Body() body: CreateProductInput): Promise<Product> {
+    return this.masterDataService.createProduct(request.auth.user.companyId, body);
+  }
+
+  @Patch('products/:id')
+  async updateProduct(
+    @Req() request: RequestWithAuth,
+    @Param('id') id: string,
+    @Body() body: UpdateProductInput
+  ): Promise<Product> {
+    const record = await this.masterDataService.updateProduct(request.auth.user.companyId, id, body);
+    return this.returnOrThrow(record, 'Produto nao encontrado.');
+  }
+
+  @Delete('products/:id')
+  async deleteProduct(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Product> {
+    const record = await this.masterDataService.deleteProduct(request.auth.user.companyId, id);
+    return this.returnOrThrow(record, 'Produto nao encontrado.');
   }
 
   private returnOrThrow<T>(record: T | null, message: string): T {

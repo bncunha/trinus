@@ -180,3 +180,71 @@ export interface CreateTemplateInput {
 export interface UpdateTemplateInput extends Partial<Omit<CreateTemplateInput, 'items'>> {
   items?: CreateTemplateItemInput[];
 }
+
+export interface ClothingSize {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface CreateClothingSizeInput {
+  name: string;
+  isActive?: boolean;
+}
+
+export type UpdateClothingSizeInput = Partial<CreateClothingSizeInput>;
+
+export interface Customer {
+  id: string;
+  name: string;
+  cpf?: string;
+  cnpj?: string;
+  address?: string;
+  mobilePhone?: string;
+  landlinePhone?: string;
+  isActive: boolean;
+}
+
+export interface CreateCustomerInput {
+  name: string;
+  cpf?: string;
+  cnpj?: string;
+  address?: string;
+  mobilePhone?: string;
+  landlinePhone?: string;
+  isActive?: boolean;
+}
+
+export type UpdateCustomerInput = Partial<CreateCustomerInput>;
+
+export interface ProductVariableDefault {
+  id: string;
+  variableId: string;
+  value: number;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  costPrice: number;
+  salePrice: number;
+  isActive: boolean;
+  variableDefaults: ProductVariableDefault[];
+}
+
+export interface CreateProductVariableDefaultInput {
+  variableId: string;
+  value: number;
+}
+
+export interface CreateProductInput {
+  name: string;
+  costPrice: number;
+  salePrice: number;
+  isActive?: boolean;
+  variableDefaults?: CreateProductVariableDefaultInput[];
+}
+
+export interface UpdateProductInput extends Partial<Omit<CreateProductInput, 'variableDefaults'>> {
+  variableDefaults?: CreateProductVariableDefaultInput[];
+}

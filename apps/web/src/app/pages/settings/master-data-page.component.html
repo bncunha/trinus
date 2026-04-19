@@ -1,10 +1,10 @@
 <section class="settings-crud">
-  <a class="settings-crud__back" routerLink="/configuracoes">Voltar para configurações</a>
+  <a class="settings-crud__back" [routerLink]="backLink">{{ backLabel }}</a>
 
   <section class="app-panel">
     <div class="settings-crud__header">
       <div>
-        <p class="app-section-label">Cadastros base</p>
+        <p class="app-section-label">{{ sectionLabel }}</p>
         <h2 class="app-section-title">{{ config.title }}</h2>
         <p class="app-section-description">{{ config.description }}</p>
       </div>
@@ -73,7 +73,7 @@
   <aside class="settings-crud__drawer" [class.settings-crud__drawer--open]="isDrawerOpen" aria-label="Formulário de cadastro">
     <div class="settings-crud__drawer-header">
       <div>
-        <p class="app-section-label">Cadastros base</p>
+        <p class="app-section-label">{{ sectionLabel }}</p>
         <h2 class="app-section-title">{{ editingRecord ? 'Editar cadastro' : config.createLabel }}</h2>
         <p class="app-section-description">{{ config.description }}</p>
       </div>
@@ -105,6 +105,15 @@
           <label class="app-field">
             <span class="app-field__label">Descrição opcional</span>
             <textarea class="app-field__control" rows="3" formControlName="description"></textarea>
+          </label>
+          <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'sizes'" [formGroup]="sizeForm">
+          <label class="app-field">
+            <span class="app-field__label">Nome</span>
+            <input class="app-field__control" type="text" formControlName="name" />
+            <app-form-field-error [control]="sizeForm.controls.name"></app-form-field-error>
           </label>
           <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
         </ng-container>
@@ -209,6 +218,74 @@
               </div>
             </div>
             <button type="button" class="app-button app-button--secondary" (click)="addTemplateItem()">Adicionar etapa</button>
+          </div>
+          <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'customers'" [formGroup]="customerForm">
+          <label class="app-field">
+            <span class="app-field__label">Nome completo</span>
+            <input class="app-field__control" type="text" formControlName="name" />
+            <app-form-field-error [control]="customerForm.controls.name"></app-form-field-error>
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">CPF opcional</span>
+            <input class="app-field__control" type="text" formControlName="cpf" />
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">CNPJ opcional</span>
+            <input class="app-field__control" type="text" formControlName="cnpj" />
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">Endereco opcional</span>
+            <textarea class="app-field__control" rows="3" formControlName="address"></textarea>
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">Celular opcional</span>
+            <input class="app-field__control" type="text" formControlName="mobilePhone" />
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">Telefone fixo opcional</span>
+            <input class="app-field__control" type="text" formControlName="landlinePhone" />
+          </label>
+          <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'products'" [formGroup]="productForm">
+          <label class="app-field">
+            <span class="app-field__label">Nome</span>
+            <input class="app-field__control" type="text" formControlName="name" />
+            <app-form-field-error [control]="productForm.controls.name"></app-form-field-error>
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">Custo do produto</span>
+            <input class="app-field__control" type="number" min="0" step="0.01" formControlName="costPrice" />
+            <app-form-field-error [control]="productForm.controls.costPrice"></app-form-field-error>
+          </label>
+          <label class="app-field">
+            <span class="app-field__label">Preco de venda</span>
+            <input class="app-field__control" type="number" min="0" step="0.01" formControlName="salePrice" />
+            <app-form-field-error [control]="productForm.controls.salePrice"></app-form-field-error>
+          </label>
+          <div class="settings-crud__template-items" formArrayName="variableDefaults">
+            <p class="settings-crud__result-summary">Variaveis padrao</p>
+            <div class="settings-crud__template-item" *ngFor="let item of productVariableDefaults.controls; let index = index" [formGroupName]="index">
+              <label class="app-field">
+                <span class="app-field__label">Variavel {{ index + 1 }}</span>
+                <select class="app-field__control" formControlName="variableId">
+                  <option value="">Nenhuma</option>
+                  <option *ngFor="let variable of selectableVariablesFor(item.get('variableId')?.value)" [value]="variable.id">{{ variable.name }}</option>
+                </select>
+              </label>
+              <label class="app-field">
+                <span class="app-field__label">Valor padrao</span>
+                <input class="app-field__control" type="number" min="0.01" step="0.01" formControlName="value" />
+              </label>
+              <button type="button" class="settings-crud__icon-button" (click)="removeProductVariableDefault(index)" aria-label="Remover variavel padrao" title="Remover">
+                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+              </button>
+            </div>
+            <button type="button" class="app-button app-button--secondary" (click)="addProductVariableDefault()">Adicionar variavel</button>
           </div>
           <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
         </ng-container>

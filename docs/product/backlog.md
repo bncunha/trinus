@@ -29,25 +29,26 @@ Proximo passo esperado:
 
 ### Cadastros base do MVP
 
-Status: em andamento.
+Status: concluido.
 
-Entregue no primeiro incremento:
+Entregue:
 
 - Implementar unidades de medida por empresa.
 - Criar unidades iniciais: Metro, Peca, Hora e Kilo.
 - Implementar variaveis numericas simples.
+- Implementar tamanhos de vestuario.
+- Implementar clientes.
+- Implementar produtos sem categoria.
+- Implementar variaveis default no produto.
 - Implementar setores.
 - Implementar etapas com setor, unidade, capacidade por dia util e variavel opcional.
 - Implementar templates de producao com etapas em ordem.
+- Clientes e produtos ficam fora de Configuracoes, como modulos principais.
 - Criar tela de configuracoes e CRUDs conectados ao banco real.
 - Cobrir API, frontend e E2E real do fluxo produtivo base.
 
 Proximo passo esperado:
 
-- Implementar tamanhos de vestuario.
-- Implementar clientes.
-- Implementar produtos sem categoria.
-- Implementar variaveis default no produto.
 - Refinar regras de inativacao quando pedidos reais existirem.
 
 ### Inteligencia inicial de pedidos

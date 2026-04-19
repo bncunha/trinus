@@ -51,9 +51,11 @@ Permissoes iniciais:
 - Gerenciar configuracoes operacionais do primeiro incremento da Fase 1:
   - unidades de medida;
   - variaveis;
+  - tamanhos;
   - setores;
   - etapas;
   - templates de producao.
+- Gerenciar clientes e produtos da propria empresa.
 
 ## OPERATOR
 

@@ -18,10 +18,13 @@
 - `/pedidos`
 - `/pedidos/formulario`
 - `/pedidos/formulario/:id`
+- `/clientes`
+- `/produtos`
 - `/fila-producao`
 - `/configuracoes`
 - `/configuracoes/unidades-medida`
 - `/configuracoes/variaveis`
+- `/configuracoes/tamanhos`
 - `/configuracoes/setores`
 - `/configuracoes/etapas`
 - `/configuracoes/templates-producao`
@@ -33,10 +36,13 @@
 - `/pedidos`
 - `/pedidos/formulario`
 - `/pedidos/formulario/:id`
+- `/clientes`
+- `/produtos`
 - `/fila-producao`
 - `/configuracoes`
 - `/configuracoes/unidades-medida`
 - `/configuracoes/variaveis`
+- `/configuracoes/tamanhos`
 - `/configuracoes/setores`
 - `/configuracoes/etapas`
 - `/configuracoes/templates-producao`
@@ -69,6 +75,10 @@
 - `POST /master-data/variables`
 - `PATCH /master-data/variables/:id`
 - `DELETE /master-data/variables/:id`
+- `GET /master-data/sizes`
+- `POST /master-data/sizes`
+- `PATCH /master-data/sizes/:id`
+- `DELETE /master-data/sizes/:id`
 - `GET /master-data/sectors`
 - `POST /master-data/sectors`
 - `PATCH /master-data/sectors/:id`
@@ -81,6 +91,14 @@
 - `POST /master-data/templates`
 - `PATCH /master-data/templates/:id`
 - `DELETE /master-data/templates/:id`
+- `GET /master-data/customers`
+- `POST /master-data/customers`
+- `PATCH /master-data/customers/:id`
+- `DELETE /master-data/customers/:id`
+- `GET /master-data/products`
+- `POST /master-data/products`
+- `PATCH /master-data/products/:id`
+- `DELETE /master-data/products/:id`
 
 ## Regras
 
@@ -92,3 +110,4 @@
 - A protecao real das permissoes deve acontecer no backend.
 - Cadastros simples como usuarios devem manter uma unica rota de lista e abrir criacao/edicao em drawer.
 - Cadastros base do primeiro incremento usam `/configuracoes` como indice e rotas filhas para CRUDs.
+- Clientes e produtos sao cadastros operacionais principais e usam rotas proprias fora de Configuracoes.

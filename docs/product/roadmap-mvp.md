@@ -54,23 +54,21 @@ Garantir que usuarios, empresas e dados operacionais nascam com isolamento corre
 
 ## Fase 1: Cadastros Base
 
-Status: em andamento.
+Status: concluido.
 
-Primeiro incremento entregue:
+Entregue:
 
 - CRUD de unidades de medida com seed inicial por empresa.
 - CRUD de variaveis numericas simples.
-- CRUD de setores.
-- CRUD de etapas com capacidade por dia util.
-- CRUD de templates com etapas em ordem.
-- Tela de configuracoes operacionais conectada ao banco real.
-
-Pendentes da fase:
-
 - CRUD de tamanhos.
 - CRUD de clientes.
 - CRUD de produtos sem categoria.
 - Variaveis default no produto.
+- CRUD de setores.
+- CRUD de etapas com capacidade por dia util.
+- CRUD de templates com etapas em ordem.
+- Tela de configuracoes operacionais conectada ao banco real.
+- Clientes e produtos ficam como itens principais do menu, fora de Configuracoes.
 
 ## Objetivo
 

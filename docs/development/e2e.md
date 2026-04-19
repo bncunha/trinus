@@ -72,9 +72,12 @@ A suite em `e2e/phase1-master-data.spec.ts` cobre:
 - CRUD completo das telas de cadastros base implementadas:
   - unidades de medida;
   - variaveis;
+  - tamanhos;
   - setores;
   - etapas;
-  - templates de producao.
+  - templates de producao;
+  - clientes;
+  - produtos com variaveis padrao.
 - Isolamento multiempresa dos cadastros base.
 - Nomes iguais em empresas diferentes sem conflito.
 - Bloqueio de alteracao de registro de outra empresa.

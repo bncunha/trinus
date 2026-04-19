@@ -50,6 +50,11 @@ export const appRoutes: Routes = [
         loadComponent: () => import('./pages/settings/master-data-page.component').then((module) => module.MasterDataPageComponent)
       },
       {
+        path: 'configuracoes/tamanhos',
+        data: { eyebrow: 'Configuracoes', title: 'Tamanhos', kind: 'sizes' },
+        loadComponent: () => import('./pages/settings/master-data-page.component').then((module) => module.MasterDataPageComponent)
+      },
+      {
         path: 'configuracoes/setores',
         data: { eyebrow: 'Configurações', title: 'Setores', kind: 'sectors' },
         loadComponent: () => import('./pages/settings/master-data-page.component').then((module) => module.MasterDataPageComponent)
@@ -62,6 +67,16 @@ export const appRoutes: Routes = [
       {
         path: 'configuracoes/templates-producao',
         data: { eyebrow: 'Configurações', title: 'Templates de produção', kind: 'templates' },
+        loadComponent: () => import('./pages/settings/master-data-page.component').then((module) => module.MasterDataPageComponent)
+      },
+      {
+        path: 'clientes',
+        data: { eyebrow: 'Cadastros', title: 'Clientes', kind: 'customers' },
+        loadComponent: () => import('./pages/settings/master-data-page.component').then((module) => module.MasterDataPageComponent)
+      },
+      {
+        path: 'produtos',
+        data: { eyebrow: 'Cadastros', title: 'Produtos', kind: 'products' },
         loadComponent: () => import('./pages/settings/master-data-page.component').then((module) => module.MasterDataPageComponent)
       },
       {

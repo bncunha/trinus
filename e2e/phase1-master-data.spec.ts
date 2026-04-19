@@ -233,6 +233,39 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.locator('.settings-crud__drawer').getByLabel('Nome').fill('Template revisado');
     await saveAndExpect(page, 'Template revisado');
     await deactivateRecord(page, 'Template revisado');
+
+    await page.goto('/configuracoes/tamanhos');
+    await page.getByRole('button', { name: /Novo tamanho/ }).first().click();
+    await page.getByLabel('Nome').fill('M CRUD');
+    await saveAndExpect(page, 'M CRUD');
+    await filterRecord(page, 'm crud', 'M CRUD');
+    await page.getByLabel('Busca').fill('');
+    await editRecord(page, 'M CRUD', 'M revisado');
+    await deactivateRecord(page, 'M revisado');
+
+    await page.goto('/clientes');
+    await page.getByRole('button', { name: /Novo cliente/ }).first().click();
+    await page.getByLabel('Nome completo').fill('Cliente CRUD');
+    await page.getByLabel('CPF opcional').fill('12345678901');
+    await page.getByLabel('Celular opcional').fill('(11) 99999-0000');
+    await saveAndExpect(page, 'Cliente CRUD');
+    await filterRecord(page, 'cliente', 'Cliente CRUD');
+    await page.getByLabel('Busca').fill('');
+    await editRecord(page, 'Cliente CRUD', 'Cliente revisado');
+    await deactivateRecord(page, 'Cliente revisado');
+
+    await page.goto('/produtos');
+    await page.getByRole('button', { name: /Novo produto/ }).first().click();
+    await page.getByLabel('Nome').fill('Camiseta CRUD');
+    await page.getByLabel('Custo do produto').fill('15.50');
+    await page.getByLabel('Preco de venda').fill('39.90');
+    await page.getByLabel('Variavel 1').selectOption({ label: 'Camadas CRUD' });
+    await page.getByLabel('Valor padrao').fill('2');
+    await saveAndExpect(page, 'Camiseta CRUD');
+    await filterRecord(page, 'camiseta', 'Camiseta CRUD');
+    await page.getByLabel('Busca').fill('');
+    await editRecord(page, 'Camiseta CRUD', 'Camiseta revisada');
+    await deactivateRecord(page, 'Camiseta revisada');
   });
 
   test('isola cadastros base por empresa e permite nomes iguais em empresas diferentes', async () => {
@@ -319,6 +352,63 @@ test.describe('Fase 1 - cadastros base reais', () => {
     expect(templatesB.map((template: { id: string }) => template.id)).toContain(templateB.id);
     expect(templatesB.map((template: { id: string }) => template.id)).not.toContain(templateA.id);
     expect((await contextA.patch(`/master-data/stages/${stageB.id}`, { data: { name: 'Invasão' } })).status()).toBe(404);
+
+    const sizeA = await (await contextA.post('/master-data/sizes', { data: { name: 'M' } })).json();
+    const sizeB = await (await contextB.post('/master-data/sizes', { data: { name: 'M' } })).json();
+    expect(sizeA.id).not.toBe(sizeB.id);
+    expect((await contextA.post('/master-data/sizes', { data: { name: 'M' } })).status()).toBe(409);
+
+    const customerA = await (await contextA.post('/master-data/customers', { data: { name: 'Cliente Padrao', cpf: '12345678901' } })).json();
+    const customerB = await (await contextB.post('/master-data/customers', { data: { name: 'Cliente Padrao', cpf: '12345678901' } })).json();
+    expect(customerA.id).not.toBe(customerB.id);
+    expect((await contextA.post('/master-data/customers', { data: { name: 'Outro Cliente', cpf: '12345678901' } })).status()).toBe(409);
+
+    const productA = await (
+      await contextA.post('/master-data/products', {
+        data: {
+          name: 'Camiseta',
+          costPrice: 15,
+          salePrice: 39.9,
+          variableDefaults: [{ variableId: variableA.id, value: 2 }]
+        }
+      })
+    ).json();
+    const productB = await (
+      await contextB.post('/master-data/products', {
+        data: {
+          name: 'Camiseta',
+          costPrice: 15,
+          salePrice: 39.9,
+          variableDefaults: [{ variableId: variableB.id, value: 2 }]
+        }
+      })
+    ).json();
+    expect(productA.id).not.toBe(productB.id);
+    expect((await contextA.post('/master-data/products', { data: { name: 'Camiseta', costPrice: 10, salePrice: 20 } })).status()).toBe(409);
+    expect(
+      (
+        await contextA.post('/master-data/products', {
+          data: { name: 'Produto Invasor', costPrice: 10, salePrice: 20, variableDefaults: [{ variableId: variableB.id, value: 1 }] }
+        })
+      ).status()
+    ).toBe(400);
+
+    const sizesA = await (await contextA.get('/master-data/sizes')).json();
+    const sizesB = await (await contextB.get('/master-data/sizes')).json();
+    const customersA = await (await contextA.get('/master-data/customers')).json();
+    const customersB = await (await contextB.get('/master-data/customers')).json();
+    const productsA = await (await contextA.get('/master-data/products')).json();
+    const productsB = await (await contextB.get('/master-data/products')).json();
+
+    expect(sizesA.map((size: { id: string }) => size.id)).toContain(sizeA.id);
+    expect(sizesA.map((size: { id: string }) => size.id)).not.toContain(sizeB.id);
+    expect(sizesB.map((size: { id: string }) => size.id)).toContain(sizeB.id);
+    expect(customersA.map((customer: { id: string }) => customer.id)).toContain(customerA.id);
+    expect(customersA.map((customer: { id: string }) => customer.id)).not.toContain(customerB.id);
+    expect(customersB.map((customer: { id: string }) => customer.id)).toContain(customerB.id);
+    expect(productsA.map((product: { id: string }) => product.id)).toContain(productA.id);
+    expect(productsA.map((product: { id: string }) => product.id)).not.toContain(productB.id);
+    expect(productsB.map((product: { id: string }) => product.id)).toContain(productB.id);
 
     await contextA.dispose();
     await contextB.dispose();

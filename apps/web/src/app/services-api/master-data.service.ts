@@ -1,16 +1,25 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type {
+  ClothingSize,
+  CreateClothingSizeInput,
+  CreateCustomerInput,
   CreateMeasurementUnitInput,
+  CreateProductInput,
   CreateSectorInput,
   CreateStageInput,
   CreateTemplateInput,
   CreateVariableInput,
+  Customer,
   MeasurementUnit,
+  Product,
   Sector,
   Stage,
   Template,
+  UpdateClothingSizeInput,
+  UpdateCustomerInput,
   UpdateMeasurementUnitInput,
+  UpdateProductInput,
   UpdateSectorInput,
   UpdateStageInput,
   UpdateTemplateInput,
@@ -60,6 +69,22 @@ export class MasterDataService {
     return this.http.delete<Variable>(masterDataApiUrl(`variables/${id}`), { withCredentials: true });
   }
 
+  listSizes(): Observable<ClothingSize[]> {
+    return this.http.get<ClothingSize[]>(masterDataApiUrl('sizes'), { withCredentials: true });
+  }
+
+  createSize(input: CreateClothingSizeInput): Observable<ClothingSize> {
+    return this.http.post<ClothingSize>(masterDataApiUrl('sizes'), input, { withCredentials: true });
+  }
+
+  updateSize(id: string, input: UpdateClothingSizeInput): Observable<ClothingSize> {
+    return this.http.patch<ClothingSize>(masterDataApiUrl(`sizes/${id}`), input, { withCredentials: true });
+  }
+
+  deleteSize(id: string): Observable<ClothingSize> {
+    return this.http.delete<ClothingSize>(masterDataApiUrl(`sizes/${id}`), { withCredentials: true });
+  }
+
   listSectors(): Observable<Sector[]> {
     return this.http.get<Sector[]>(masterDataApiUrl('sectors'), { withCredentials: true });
   }
@@ -106,5 +131,37 @@ export class MasterDataService {
 
   deleteTemplate(id: string): Observable<Template> {
     return this.http.delete<Template>(masterDataApiUrl(`templates/${id}`), { withCredentials: true });
+  }
+
+  listCustomers(): Observable<Customer[]> {
+    return this.http.get<Customer[]>(masterDataApiUrl('customers'), { withCredentials: true });
+  }
+
+  createCustomer(input: CreateCustomerInput): Observable<Customer> {
+    return this.http.post<Customer>(masterDataApiUrl('customers'), input, { withCredentials: true });
+  }
+
+  updateCustomer(id: string, input: UpdateCustomerInput): Observable<Customer> {
+    return this.http.patch<Customer>(masterDataApiUrl(`customers/${id}`), input, { withCredentials: true });
+  }
+
+  deleteCustomer(id: string): Observable<Customer> {
+    return this.http.delete<Customer>(masterDataApiUrl(`customers/${id}`), { withCredentials: true });
+  }
+
+  listProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(masterDataApiUrl('products'), { withCredentials: true });
+  }
+
+  createProduct(input: CreateProductInput): Observable<Product> {
+    return this.http.post<Product>(masterDataApiUrl('products'), input, { withCredentials: true });
+  }
+
+  updateProduct(id: string, input: UpdateProductInput): Observable<Product> {
+    return this.http.patch<Product>(masterDataApiUrl(`products/${id}`), input, { withCredentials: true });
+  }
+
+  deleteProduct(id: string): Observable<Product> {
+    return this.http.delete<Product>(masterDataApiUrl(`products/${id}`), { withCredentials: true });
   }
 }

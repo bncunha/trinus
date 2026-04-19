@@ -16,7 +16,8 @@ Permitir que a empresa configure os cadastros base usados em produtos, templates
 - Setores.
 - Etapas.
 - Templates de producao.
-- Tamanhos de vestuario, clientes e produtos ficam para o proximo incremento da Fase 1.
+- Tamanhos de vestuario.
+- Clientes e produtos ficam fora de Configuracoes, como modulos principais em `/clientes` e `/produtos`.
 - Calendario de trabalho simples fica preparado para fase futura de prazo.
 
 ## Tamanhos de Vestuario
@@ -30,6 +31,7 @@ Comportamento:
 
 - A empresa pode cadastrar tamanhos como P, M, G, Tam 1 e Tam 2.
 - O nome nao pode repetir dentro da mesma empresa.
+- Tamanhos permanecem em Configuracoes porque sao cadastro auxiliar.
 
 ## Unidades de Medida
 
@@ -125,6 +127,7 @@ Comportamento:
 - Formularios podem ser confirmados com Enter, exceto dentro de campos de texto longo.
 - `ADMIN` e `MANAGER` podem gerenciar os cadastros deste incremento.
 - O E2E real cobre criacao de unidade inicial por empresa, variavel, setor, etapa e template, incluindo isolamento multiempresa, CRUD completo e bloqueio de opcoes inativas nos novos vinculos.
+- O E2E real tambem cobre tamanhos, clientes e produtos com variaveis padrao.
 
 ## Calendario de Trabalho
 

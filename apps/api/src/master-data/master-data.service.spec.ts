@@ -26,6 +26,15 @@ describe('MasterDataService', () => {
     updatedAt: now
   };
 
+  const sizeRecord = {
+    id: 'size_1',
+    companyId,
+    name: 'M',
+    isActive: true,
+    createdAt: now,
+    updatedAt: now
+  };
+
   const sectorRecord = {
     id: 'sector_1',
     companyId,
@@ -69,6 +78,39 @@ describe('MasterDataService', () => {
     ]
   };
 
+  const customerRecord = {
+    id: 'customer_1',
+    companyId,
+    name: 'Cliente Teste',
+    cpf: '12345678901',
+    cnpj: null,
+    address: 'Rua 1',
+    mobilePhone: '(11) 99999-0000',
+    landlinePhone: null,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now
+  };
+
+  const productRecord = {
+    id: 'product_1',
+    companyId,
+    name: 'Camiseta',
+    costPrice: 15,
+    salePrice: 39.9,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+    variableDefaults: [
+      {
+        id: 'default_1',
+        productId: 'product_1',
+        variableId: 'variable_1',
+        value: 2
+      }
+    ]
+  };
+
   const prisma = {
     measurementUnit: {
       create: jest.fn(),
@@ -77,6 +119,12 @@ describe('MasterDataService', () => {
       update: jest.fn()
     },
     variable: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn()
+    },
+    clothingSize: {
       create: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -102,6 +150,23 @@ describe('MasterDataService', () => {
       update: jest.fn()
     },
     templateItem: {
+      createMany: jest.fn(),
+      deleteMany: jest.fn()
+    },
+    customer: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn()
+    },
+    product: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn()
+    },
+    productVariableDefault: {
       createMany: jest.fn(),
       deleteMany: jest.fn()
     },
@@ -209,6 +274,77 @@ describe('MasterDataService', () => {
       description: 'Preparação de cortes',
       isActive: true
     });
+  });
+
+  it('creates a clothing size with company uniqueness', async () => {
+    prisma.clothingSize.create.mockResolvedValue(sizeRecord);
+
+    await expect(service.createSize(companyId, { name: ' M ' })).resolves.toEqual({
+      id: 'size_1',
+      name: 'M',
+      isActive: true
+    });
+    expect(prisma.clothingSize.create).toHaveBeenCalledWith({
+      data: {
+        companyId,
+        name: 'M',
+        isActive: true
+      }
+    });
+  });
+
+  it('creates a customer with optional document and phones', async () => {
+    prisma.customer.create.mockResolvedValue(customerRecord);
+
+    await expect(
+      service.createCustomer(companyId, {
+        name: ' Cliente Teste ',
+        cpf: '12345678901',
+        address: ' Rua 1 ',
+        mobilePhone: '(11) 99999-0000'
+      })
+    ).resolves.toMatchObject({
+      id: 'customer_1',
+      name: 'Cliente Teste',
+      cpf: '12345678901',
+      address: 'Rua 1',
+      mobilePhone: '(11) 99999-0000',
+      isActive: true
+    });
+  });
+
+  it('creates a product with variable defaults from the same company', async () => {
+    prisma.variable.findMany.mockResolvedValue([{ id: 'variable_1' }]);
+    prisma.product.create.mockResolvedValue(productRecord);
+
+    await expect(
+      service.createProduct(companyId, {
+        name: ' Camiseta ',
+        costPrice: 15,
+        salePrice: 39.9,
+        variableDefaults: [{ variableId: 'variable_1', value: 2 }]
+      })
+    ).resolves.toEqual({
+      id: 'product_1',
+      name: 'Camiseta',
+      costPrice: 15,
+      salePrice: 39.9,
+      isActive: true,
+      variableDefaults: [{ id: 'default_1', variableId: 'variable_1', value: 2 }]
+    });
+  });
+
+  it('rejects product defaults with variables from another company', async () => {
+    prisma.variable.findMany.mockResolvedValue([]);
+
+    await expect(
+      service.createProduct(companyId, {
+        name: 'Camiseta',
+        costPrice: 15,
+        salePrice: 39.9,
+        variableDefaults: [{ variableId: 'variable_other', value: 2 }]
+      })
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('creates a template after confirming all stages belong to the company', async () => {

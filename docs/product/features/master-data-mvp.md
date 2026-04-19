@@ -2,24 +2,21 @@
 
 ## Status
 
-Em andamento.
+Concluido.
 
-Primeiro incremento entregue com banco real:
+Entregue com banco real:
 
 - Unidades de medida por empresa, com seed inicial de Metro, Peca, Hora e Kilo.
 - Variaveis numericas simples.
-- Setores produtivos.
-- Etapas produtivas com setor, unidade, capacidade por dia util e variavel opcional.
-- Templates de producao com etapas em ordem.
-- Tela `/configuracoes` com CRUDs conectados a API real.
-
-Pendentes para completar a Fase 1:
-
 - Tamanhos de vestuario.
 - Clientes.
 - Produtos sem categoria.
 - Variaveis default no produto.
-- Regras completas de inativacao considerando pedidos reais.
+- Setores produtivos.
+- Etapas produtivas com setor, unidade, capacidade por dia util e variavel opcional.
+- Templates de producao com etapas em ordem.
+- Tela `/configuracoes` com cadastros auxiliares conectados a API real.
+- Telas `/clientes` e `/produtos` como cadastros operacionais principais.
 
 ## Objetivo
 
@@ -84,6 +81,8 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
   - Telefone fixo opcional.
 - O pedido deve permitir selecionar um cliente existente.
 - A tela de pedido deve permitir cadastrar um cliente rapidamente quando ele ainda nao existir.
+- Clientes ficam no menu principal em `/clientes`, fora de Configuracoes.
+- CPF e CNPJ, quando informados, nao podem repetir dentro da mesma empresa.
 
 ## Produtos
 
@@ -95,6 +94,8 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 - Categoria de produto fica fora do MVP.
 - O produto pode ter variaveis opcionais com valor padrao.
 - O nome do produto nao pode repetir dentro da mesma empresa.
+- Produtos ficam no menu principal em `/produtos`, fora de Configuracoes.
+- Variaveis padrao do produto devem referenciar variaveis ativas da mesma empresa.
 
 ## Setores
 
@@ -148,13 +149,13 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 
 ## Criterios de Aceite
 
-- A empresa consegue cadastrar tamanhos sem duplicidade. *(pendente)*
+- A empresa consegue cadastrar tamanhos sem duplicidade.
 - A empresa consegue cadastrar unidades sem duplicidade de nome ou sigla.
 - Nova empresa recebe metro, peca, hora e kilo como unidades iniciais.
 - A empresa consegue cadastrar variaveis numericas.
-- A empresa consegue cadastrar clientes com CPF, CNPJ, endereco e telefones opcionais. *(pendente)*
-- A empresa consegue cadastrar produtos sem categoria. *(pendente)*
-- A empresa consegue associar variaveis default ao produto. *(pendente)*
+- A empresa consegue cadastrar clientes com CPF, CNPJ, endereco e telefones opcionais.
+- A empresa consegue cadastrar produtos sem categoria.
+- A empresa consegue associar variaveis default ao produto.
 - A empresa consegue cadastrar setores e etapas.
 - A empresa consegue montar templates com etapas em ordem.
 - Dados cadastrados por uma empresa nao aparecem nem conflitam com outra empresa.
