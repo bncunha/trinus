@@ -1,0 +1,113 @@
+<section class="settings-crud">
+  <a class="settings-crud__back" [routerLink]="backLink">{{ backLabel }}</a>
+
+  <section class="app-panel">
+    <div class="settings-crud__header">
+      <div>
+        <p class="app-section-label">{{ sectionLabel }}</p>
+        <h2 class="app-section-title">{{ config.title }}</h2>
+        <p class="app-section-description">{{ config.description }}</p>
+      </div>
+      <button type="button" class="app-button" (click)="createClicked.emit()" [disabled]="isLoading">{{ config.createLabel }}</button>
+    </div>
+
+    <div class="app-loading" *ngIf="isLoading">Carregando cadastros...</div>
+
+    <div class="app-empty settings-crud__empty" *ngIf="!isLoading && records.length === 0">
+      <strong>{{ config.empty }}</strong>
+      <span>Cadastre o primeiro registro para liberar os próximos fluxos da produção.</span>
+      <button type="button" class="app-button" (click)="createClicked.emit()">{{ config.createLabel }}</button>
+    </div>
+
+    <form class="settings-crud__filters" [formGroup]="filterForm" *ngIf="!isLoading && records.length > 0" aria-label="Filtros de cadastros">
+      <label class="app-field settings-crud__filter-search">
+        <span class="app-field__label">Busca</span>
+        <input class="app-field__control" type="search" formControlName="search" placeholder="Buscar por nome" />
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">Situação</span>
+        <select class="app-field__control" formControlName="status">
+          <option value="ALL">Todas</option>
+          <option value="ACTIVE">Ativos</option>
+          <option value="INACTIVE">Inativos</option>
+        </select>
+      </label>
+
+      <button type="button" class="app-button app-button--secondary settings-crud__clear-filters" (click)="clearFilters()" *ngIf="hasActiveFilters">
+        Limpar filtros
+      </button>
+    </form>
+
+    <p class="settings-crud__result-summary" *ngIf="!isLoading && records.length > 0" aria-live="polite">{{ resultSummary }}</p>
+
+    <div class="app-empty settings-crud__empty" *ngIf="!isLoading && records.length > 0 && filteredRecords.length === 0">
+      <strong>Nenhum cadastro encontrado.</strong>
+      <span>Ajuste os filtros ou limpe a busca para ver outros registros.</span>
+      <button type="button" class="app-button app-button--secondary" (click)="clearFilters()" *ngIf="hasActiveFilters">Limpar filtros</button>
+    </div>
+
+    <app-shared-list [items]="filteredRecords" ariaLabel="Cadastros filtrados" *ngIf="!isLoading && filteredRecords.length > 0">
+      <ng-template let-record>
+        <div class="settings-crud__item">
+          <span class="settings-crud__item-main">
+            <strong>{{ record.name }}</strong>
+            <span>{{ recordSubtitle(record) }}</span>
+          </span>
+          <span class="settings-crud__badge" [class.settings-crud__badge--inactive]="!record.isActive">
+            {{ record.isActive ? 'Ativo' : 'Inativo' }}
+          </span>
+          <div class="settings-crud__actions">
+            <button type="button" class="settings-crud__icon-button" (click)="editClicked.emit(record)" aria-label="Editar cadastro" title="Editar">
+              <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+            </button>
+            <div class="settings-crud__menu-wrapper">
+              <button
+                type="button"
+                class="settings-crud__icon-button"
+                (click)="toggleActionsMenu.emit(record.id)"
+                [attr.aria-expanded]="openedActionsRecordId === record.id"
+                aria-haspopup="menu"
+                aria-label="Mais opcoes"
+                title="Mais opcoes"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+              </button>
+
+              <div class="settings-crud__actions-menu" role="menu" *ngIf="openedActionsRecordId === record.id">
+                <button type="button" role="menuitem" class="settings-crud__menu-item" (click)="editClicked.emit(record)">
+                  <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+                  Editar
+                </button>
+                <button type="button" role="menuitem" class="settings-crud__menu-item" (click)="statusClicked.emit(record)">
+                  <span class="material-symbols-rounded" aria-hidden="true">{{ record.isActive ? 'block' : 'check_circle' }}</span>
+                  {{ record.isActive ? 'Inativar' : 'Ativar' }}
+                </button>
+                <button type="button" role="menuitem" class="settings-crud__menu-item settings-crud__menu-item--danger" (click)="deleteClicked.emit(record)">
+                  <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </app-shared-list>
+  </section>
+
+  <div class="settings-crud__menu-backdrop" *ngIf="openedActionsRecordId" (click)="closeActionsMenu.emit()"></div>
+  <div class="settings-crud__drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer.emit()"></div>
+
+  <aside class="settings-crud__drawer" [class.settings-crud__drawer--open]="isDrawerOpen" aria-label="Formulário de cadastro">
+    <div class="settings-crud__drawer-header">
+      <div>
+        <p class="app-section-label">{{ sectionLabel }}</p>
+        <h2 class="app-section-title">{{ editingRecord ? 'Editar cadastro' : config.createLabel }}</h2>
+        <p class="app-section-description">{{ config.description }}</p>
+      </div>
+      <button type="button" class="settings-crud__drawer-close" (click)="closeDrawer.emit()" aria-label="Fechar formulário">Fechar</button>
+    </div>
+
+    <ng-content select="[crud-drawer-form]"></ng-content>
+  </aside>
+</section>

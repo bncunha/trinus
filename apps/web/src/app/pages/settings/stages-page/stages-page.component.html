@@ -1,0 +1,52 @@
+﻿<app-crud-page-shell
+      [config]="config"
+      [backLink]="backLink"
+      [backLabel]="backLabel"
+      [sectionLabel]="sectionLabel"
+      [records]="records"
+      [isLoading]="isLoading"
+      [isDrawerOpen]="isDrawerOpen"
+      [editingRecord]="editingRecord"
+      [openedActionsRecordId]="openedActionsRecordId"
+      [recordSubtitle]="recordSubtitle"
+      (createClicked)="openCreateDrawer()"
+      (editClicked)="openEditDrawer($event)"
+      (statusClicked)="toggleStatus($event)"
+      (deleteClicked)="deleteRecord($event)"
+      (toggleActionsMenu)="toggleActionsMenu($event)"
+      (closeActionsMenu)="closeActionsMenu()"
+      (closeDrawer)="closeDrawer()"
+    >
+      <form crud-drawer-form class="settings-crud__form" [formGroup]="form" (ngSubmit)="save()" (keydown.enter)="submitFromKeyboard($event)">
+        <label class="app-field">
+          <span class="app-field__label">Nome</span>
+          <input class="app-field__control" type="text" formControlName="name" />
+          <app-form-field-error [control]="form.controls.name"></app-form-field-error>
+        </label>
+        <div class="app-field">
+          <span class="app-field__label">Setor</span>
+          <app-searchable-select formControlName="sectorId" ariaLabel="Setor" placeholder="Selecione" searchPlaceholder="Filtrar setores" [options]="sectorOptions" />
+          <app-form-field-error [control]="form.controls.sectorId"></app-form-field-error>
+        </div>
+        <div class="app-field">
+          <span class="app-field__label">Unidade de medida</span>
+          <app-searchable-select formControlName="measurementUnitId" ariaLabel="Unidade de medida" placeholder="Selecione" searchPlaceholder="Filtrar unidades" [options]="unitOptions" />
+          <app-form-field-error [control]="form.controls.measurementUnitId"></app-form-field-error>
+        </div>
+        <label class="app-field">
+          <span class="app-field__label">Capacidade por dia útil</span>
+          <input class="app-field__control" type="number" min="0.01" step="0.01" formControlName="capacityPerWorkday" />
+          <app-form-field-error [control]="form.controls.capacityPerWorkday"></app-form-field-error>
+        </label>
+        <div class="app-field">
+          <span class="app-field__label">Variável opcional</span>
+          <app-searchable-select formControlName="variableId" ariaLabel="Variável opcional" placeholder="Nenhuma" searchPlaceholder="Filtrar variaveis" [options]="variableOptions" />
+        </div>
+        <label class="app-field"><span class="app-field__label">Descrição opcional</span><textarea class="app-field__control" rows="3" formControlName="description"></textarea></label>
+        <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
+        <div class="settings-crud__drawer-actions">
+          <button type="button" class="app-button app-button--secondary" (click)="closeDrawer()">Cancelar</button>
+          <button type="submit" class="app-button" [disabled]="isSaving">{{ isSaving ? 'Salvando...' : 'Salvar cadastro' }}</button>
+        </div>
+      </form>
+    </app-crud-page-shell>

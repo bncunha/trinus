@@ -93,4 +93,5 @@ Quando entrar no escopo, restricoes iniciais:
 - `OPERATOR` nao acessa os endpoints de `/master-data` neste incremento.
 - Todas as operacoes de cadastros base usam o `companyId` da sessao autenticada.
 - Unicidade de nomes e siglas sempre considera a empresa atual.
-- `DELETE` nos endpoints de cadastros base executa inativacao logica (`isActive = false`).
+- A inativacao dos cadastros base deve ser feita com `PATCH` enviando `isActive = false`.
+- `DELETE` nos endpoints de cadastros base remove o registro quando nao houver dependencia que bloqueie a exclusao.

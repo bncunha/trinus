@@ -122,7 +122,7 @@ export class MasterDataService {
   }
 
   async deleteMeasurementUnit(companyId: string, id: string): Promise<MeasurementUnit | null> {
-    return this.deactivateRecord(companyId, id, this.prisma.measurementUnit, this.toMeasurementUnit);
+    return this.deleteRecord(companyId, id, this.prisma.measurementUnit, this.toMeasurementUnit);
   }
 
   async listVariables(companyId: string): Promise<Variable[]> {
@@ -182,12 +182,12 @@ export class MasterDataService {
   }
 
   async deleteVariable(companyId: string, id: string): Promise<Variable | null> {
-    return this.deactivateRecord(companyId, id, this.prisma.variable, this.toVariable);
+    return this.deleteRecord(companyId, id, this.prisma.variable, this.toVariable);
   }
 
   async listSizes(companyId: string): Promise<ClothingSize[]> {
     const records = await this.prisma.clothingSize.findMany({
-      orderBy: [{ name: 'asc' }],
+      orderBy: [{ position: 'asc' }, { name: 'asc' }],
       where: { companyId }
     });
 
@@ -201,12 +201,14 @@ export class MasterDataService {
 
   async createSize(companyId: string, input: CreateClothingSizeInput): Promise<ClothingSize> {
     this.validateName(input.name);
+    this.validatePosition(input.position);
 
     const record = await this.catchUniqueConflict(() =>
       this.prisma.clothingSize.create({
         data: {
           companyId,
           name: input.name.trim(),
+          position: input.position ?? 0,
           isActive: input.isActive ?? true
         }
       })
@@ -226,10 +228,15 @@ export class MasterDataService {
       this.validateName(input.name);
     }
 
+    if (input.position !== undefined) {
+      this.validatePosition(input.position);
+    }
+
     const record = await this.catchUniqueConflict(() =>
       this.prisma.clothingSize.update({
         data: {
           name: input.name?.trim(),
+          position: input.position,
           isActive: input.isActive
         },
         where: { id: current.id }
@@ -240,7 +247,7 @@ export class MasterDataService {
   }
 
   async deleteSize(companyId: string, id: string): Promise<ClothingSize | null> {
-    return this.deactivateRecord(companyId, id, this.prisma.clothingSize, this.toClothingSize);
+    return this.deleteRecord(companyId, id, this.prisma.clothingSize, this.toClothingSize);
   }
 
   async listSectors(companyId: string): Promise<Sector[]> {
@@ -300,7 +307,7 @@ export class MasterDataService {
   }
 
   async deleteSector(companyId: string, id: string): Promise<Sector | null> {
-    return this.deactivateRecord(companyId, id, this.prisma.sector, this.toSector);
+    return this.deleteRecord(companyId, id, this.prisma.sector, this.toSector);
   }
 
   async listStages(companyId: string): Promise<Stage[]> {
@@ -385,7 +392,7 @@ export class MasterDataService {
   }
 
   async deleteStage(companyId: string, id: string): Promise<Stage | null> {
-    return this.deactivateRecord(companyId, id, this.prisma.stage, this.toStage);
+    return this.deleteRecord(companyId, id, this.prisma.stage, this.toStage);
   }
 
   async listTemplates(companyId: string): Promise<Template[]> {
@@ -491,8 +498,7 @@ export class MasterDataService {
       return null;
     }
 
-    const record = await this.prisma.template.update({
-      data: { isActive: false },
+    const record = await this.prisma.template.delete({
       include: { items: { orderBy: [{ position: 'asc' }] } },
       where: { id: current.id }
     });
@@ -563,7 +569,7 @@ export class MasterDataService {
   }
 
   async deleteCustomer(companyId: string, id: string): Promise<Customer | null> {
-    return this.deactivateRecord(companyId, id, this.prisma.customer, this.toCustomer);
+    return this.deleteRecord(companyId, id, this.prisma.customer, this.toCustomer);
   }
 
   async listProducts(companyId: string): Promise<Product[]> {
@@ -669,8 +675,7 @@ export class MasterDataService {
       return null;
     }
 
-    const record = await this.prisma.product.update({
-      data: { isActive: false },
+    const record = await this.prisma.product.delete({
       include: { variableDefaults: { orderBy: [{ variableId: 'asc' }] } },
       where: { id: current.id }
     });
@@ -987,6 +992,26 @@ export class MasterDataService {
     return mapper.call(this, record);
   }
 
+  private async deleteRecord<TRecord extends { id: string; companyId: string }, TOutput>(
+    companyId: string,
+    id: string,
+    delegate: {
+      findFirst(args: { where: { companyId: string; id: string } }): Promise<TRecord | null>;
+      delete(args: { where: { id: string } }): Promise<TRecord>;
+    },
+    mapper: (record: TRecord) => TOutput
+  ): Promise<TOutput | null> {
+    const current = await delegate.findFirst({ where: { companyId, id } });
+
+    if (!current) {
+      return null;
+    }
+
+    const record = await delegate.delete({ where: { id: current.id } });
+
+    return mapper.call(this, record);
+  }
+
   private toMeasurementUnit(record: MeasurementUnitRecord): MeasurementUnit {
     return {
       id: record.id,
@@ -1009,6 +1034,7 @@ export class MasterDataService {
     return {
       id: record.id,
       name: record.name,
+      position: record.position,
       isActive: record.isActive
     };
   }

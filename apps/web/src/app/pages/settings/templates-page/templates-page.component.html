@@ -1,0 +1,59 @@
+﻿<app-crud-page-shell
+      [config]="config"
+      [backLink]="backLink"
+      [backLabel]="backLabel"
+      [sectionLabel]="sectionLabel"
+      [records]="records"
+      [isLoading]="isLoading"
+      [isDrawerOpen]="isDrawerOpen"
+      [editingRecord]="editingRecord"
+      [openedActionsRecordId]="openedActionsRecordId"
+      [recordSubtitle]="recordSubtitle"
+      (createClicked)="openCreateDrawer()"
+      (editClicked)="openEditDrawer($event)"
+      (statusClicked)="toggleStatus($event)"
+      (deleteClicked)="deleteRecord($event)"
+      (toggleActionsMenu)="toggleActionsMenu($event)"
+      (closeActionsMenu)="closeActionsMenu()"
+      (closeDrawer)="closeDrawer()"
+    >
+      <form crud-drawer-form class="settings-crud__form" [formGroup]="form" (ngSubmit)="save()" (keydown.enter)="submitFromKeyboard($event)">
+        <label class="app-field">
+          <span class="app-field__label">Nome</span>
+          <input class="app-field__control" type="text" formControlName="name" />
+          <app-form-field-error [control]="form.controls.name"></app-form-field-error>
+        </label>
+        <label class="app-field"><span class="app-field__label">Descrição opcional</span><textarea class="app-field__control" rows="3" formControlName="description"></textarea></label>
+        <div class="settings-crud__template-items" formArrayName="items">
+          <div class="settings-crud__template-item" *ngFor="let item of templateItems.controls; let index = index" [formGroupName]="index">
+            <div class="app-field">
+              <span class="app-field__label">Etapa {{ index + 1 }}</span>
+              <app-searchable-select
+                formControlName="stageId"
+                [ariaLabel]="'Etapa ' + (index + 1)"
+                placeholder="Selecione"
+                searchPlaceholder="Filtrar etapas"
+                [options]="stageOptionsFor(item.get('stageId')?.value)"
+              />
+            </div>
+            <div class="settings-crud__template-actions">
+              <button type="button" class="settings-crud__icon-button" (click)="moveTemplateItemUp(index)" [disabled]="index === 0" [attr.aria-label]="'Subir item ' + (index + 1) + ' do template'" title="Subir">
+                <span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span>
+              </button>
+              <button type="button" class="settings-crud__icon-button" (click)="moveTemplateItemDown(index)" [disabled]="index === templateItems.length - 1" [attr.aria-label]="'Descer item ' + (index + 1) + ' do template'" title="Descer">
+                <span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span>
+              </button>
+              <button type="button" class="settings-crud__icon-button" (click)="removeTemplateItem(index)" aria-label="Remover etapa do template" title="Remover">
+                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="app-button app-button--secondary" (click)="addTemplateItem()">Adicionar etapa</button>
+        </div>
+        <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
+        <div class="settings-crud__drawer-actions">
+          <button type="button" class="app-button app-button--secondary" (click)="closeDrawer()">Cancelar</button>
+          <button type="submit" class="app-button" [disabled]="isSaving">{{ isSaving ? 'Salvando...' : 'Salvar cadastro' }}</button>
+        </div>
+      </form>
+    </app-crud-page-shell>

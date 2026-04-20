@@ -1,0 +1,5 @@
+﻿<ul class="shared-list" *ngIf="itemTemplate as template" [attr.aria-label]="ariaLabel || null">
+      <li class="shared-list__item" *ngFor="let item of normalizedItems; let index = index; trackBy: trackByItem">
+        <ng-container *ngTemplateOutlet="template; context: { $implicit: item, index: index }"></ng-container>
+      </li>
+    </ul>

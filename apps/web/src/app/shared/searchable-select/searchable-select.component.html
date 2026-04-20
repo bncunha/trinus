@@ -1,0 +1,43 @@
+﻿<div class="searchable-select">
+      <button
+        type="button"
+        class="app-field__control searchable-select__trigger"
+        role="combobox"
+        [attr.aria-label]="ariaLabel"
+        [attr.aria-expanded]="isOpen"
+        [attr.aria-controls]="listboxId"
+        [disabled]="isDisabled"
+        (click)="toggle()"
+      >
+        <span [class.searchable-select__placeholder]="!selectedOption">{{ selectedOption?.label ?? placeholder }}</span>
+        <span class="material-symbols-rounded searchable-select__icon" aria-hidden="true">expand_more</span>
+      </button>
+
+      <div class="searchable-select__popup" *ngIf="isOpen">
+        <input
+          #searchInput
+          class="searchable-select__search"
+          type="search"
+          [attr.placeholder]="searchPlaceholder"
+          [value]="filter"
+          (input)="updateFilter($event)"
+          (keydown.enter)="$event.preventDefault(); $event.stopPropagation()"
+        />
+
+        <div class="searchable-select__options" role="listbox" [id]="listboxId" [attr.aria-label]="ariaLabel">
+          <button
+            type="button"
+            class="searchable-select__option"
+            role="option"
+            *ngFor="let option of filteredOptions"
+            [class.searchable-select__option--selected]="option.value === value"
+            [attr.aria-selected]="option.value === value"
+            (click)="select(option)"
+          >
+            {{ option.label }}
+          </button>
+
+          <span class="searchable-select__empty" *ngIf="filteredOptions.length === 0">Nenhuma opção encontrada.</span>
+        </div>
+      </div>
+    </div>

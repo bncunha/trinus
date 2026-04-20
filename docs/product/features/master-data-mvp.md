@@ -46,6 +46,7 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 - Exemplos: P, M, G, Tam 1, Tam 2.
 - O nome do tamanho nao pode repetir dentro da mesma empresa.
 - Tamanhos sao opcionais no item do pedido.
+- Tamanhos possuem posicao manual para respeitar a ordem definida pela empresa em grades e selects.
 
 ## Unidades de Medida
 
@@ -96,6 +97,8 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 - O nome do produto nao pode repetir dentro da mesma empresa.
 - Produtos ficam no menu principal em `/produtos`, fora de Configuracoes.
 - Variaveis padrao do produto devem referenciar variaveis ativas da mesma empresa.
+- Variaveis padrao sao opcionais. Quando uma variavel for selecionada no produto, o valor padrao se torna obrigatorio.
+- O cadastro de novo produto inicia sem variaveis padrao; o usuario adiciona linhas apenas quando quiser definir defaults.
 
 ## Setores
 
@@ -138,6 +141,8 @@ Permitir que cada empresa configure os dados necessarios para cadastrar produtos
 - Alterar etapas em um pedido nao altera o template original.
 - Novos templates so podem selecionar etapas ativas.
 - A ordenacao das etapas no formulario usa botoes `Subir` e `Descer`, com acoes desabilitadas nas extremidades da lista.
+- Selects com muitos cadastros possuem filtro local dentro do popup de opcoes.
+- Listagens usam menu de tres pontos com acoes Editar, Inativar ou Ativar, e Excluir quando o registro nao tiver dependencia.
 
 ## Fora do Escopo
 

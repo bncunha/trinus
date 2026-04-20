@@ -1,0 +1,37 @@
+﻿<app-crud-page-shell
+      [config]="config"
+      [backLink]="backLink"
+      [backLabel]="backLabel"
+      [sectionLabel]="sectionLabel"
+      [records]="records"
+      [isLoading]="isLoading"
+      [isDrawerOpen]="isDrawerOpen"
+      [editingRecord]="editingRecord"
+      [openedActionsRecordId]="openedActionsRecordId"
+      [recordSubtitle]="recordSubtitle"
+      (createClicked)="openCreateDrawer()"
+      (editClicked)="openEditDrawer($event)"
+      (statusClicked)="toggleStatus($event)"
+      (deleteClicked)="deleteRecord($event)"
+      (toggleActionsMenu)="toggleActionsMenu($event)"
+      (closeActionsMenu)="closeActionsMenu()"
+      (closeDrawer)="closeDrawer()"
+    >
+      <form crud-drawer-form class="settings-crud__form" [formGroup]="form" (ngSubmit)="save()" (keydown.enter)="submitFromKeyboard($event)">
+        <label class="app-field">
+          <span class="app-field__label">Nome</span>
+          <input class="app-field__control" type="text" formControlName="name" />
+          <app-form-field-error [control]="form.controls.name"></app-form-field-error>
+        </label>
+        <label class="app-field">
+          <span class="app-field__label">Sigla</span>
+          <input class="app-field__control" type="text" formControlName="code" />
+          <app-form-field-error [control]="form.controls.code"></app-form-field-error>
+        </label>
+        <label class="settings-crud__checkbox"><input type="checkbox" formControlName="isActive" /> <span>Cadastro ativo</span></label>
+        <div class="settings-crud__drawer-actions">
+          <button type="button" class="app-button app-button--secondary" (click)="closeDrawer()">Cancelar</button>
+          <button type="submit" class="app-button" [disabled]="isSaving">{{ isSaving ? 'Salvando...' : 'Salvar cadastro' }}</button>
+        </div>
+      </form>
+    </app-crud-page-shell>

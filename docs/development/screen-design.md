@@ -108,6 +108,8 @@ Componentes iniciais recomendados:
 - No mobile, o drawer lateral deve virar tela cheia ou sheet.
 - CRUDs complexos devem usar pagina propria de formulario.
 - Um cadastro e complexo quando tem multiplas secoes, itens dinamicos, regras dependentes entre campos, anexos, calculos, revisao final ou risco operacional relevante.
+- Campos com muitas opcoes vindas de outro cadastro devem usar select compartilhado com filtro local dentro do popup, acima das opcoes.
+- O filtro de select nao deve aparecer como campo separado no formulario.
 - Exemplos: Usuarios usa drawer; Pedidos usa pagina propria.
 
 ## Padrao de Acoes em Listas

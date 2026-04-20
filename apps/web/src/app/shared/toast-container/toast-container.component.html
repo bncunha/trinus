@@ -1,0 +1,11 @@
+﻿<section class="toast-container" aria-live="polite" aria-atomic="true" *ngIf="toastService.toast$ | async as toast">
+      <article class="toast-container__toast" [class]="'toast-container__toast toast-container__toast--' + toast.kind">
+        <div>
+          <strong>{{ toast.title }}</strong>
+          <p>{{ toast.message }}</p>
+        </div>
+        <button type="button" class="toast-container__close" (click)="toastService.clear()" aria-label="Fechar mensagem">
+          Fechar
+        </button>
+      </article>
+    </section>

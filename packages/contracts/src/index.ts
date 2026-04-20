@@ -184,11 +184,13 @@ export interface UpdateTemplateInput extends Partial<Omit<CreateTemplateInput, '
 export interface ClothingSize {
   id: string;
   name: string;
+  position: number;
   isActive: boolean;
 }
 
 export interface CreateClothingSizeInput {
   name: string;
+  position?: number;
   isActive?: boolean;
 }
 

@@ -25,6 +25,7 @@ Permitir que a empresa configure os cadastros base usados em produtos, templates
 Campos:
 
 - Nome.
+- Posicao.
 - Situacao.
 
 Comportamento:
@@ -32,6 +33,7 @@ Comportamento:
 - A empresa pode cadastrar tamanhos como P, M, G, Tam 1 e Tam 2.
 - O nome nao pode repetir dentro da mesma empresa.
 - Tamanhos permanecem em Configuracoes porque sao cadastro auxiliar.
+- A posicao define a ordem exibida em grades e seletores de tamanho.
 
 ## Unidades de Medida
 
@@ -117,13 +119,16 @@ Comportamento:
 - A ordenacao das etapas usa botoes `Subir` e `Descer` em cada item do template.
 - A primeira etapa nao pode subir e a ultima etapa nao pode descer.
 - Novos templates mostram apenas etapas ativas como opcoes.
+- Campos que dependem de outro cadastro possuem filtro local dentro do popup do select.
 
 ## Implementacao Atual
 
 - `/configuracoes` funciona como indice dos cadastros base.
 - Cada card mostra a quantidade de registros cadastrados e abre o CRUD correspondente.
 - CRUDs usam lista principal, filtros locais por busca e situacao, formulario em drawer e toast global.
-- `Inativar` usa confirmacao e chama exclusao logica no backend.
+- Acoes de lista usam menu de tres pontos no padrao de Usuarios.
+- `Inativar` usa confirmacao e altera `isActive`.
+- `Excluir` usa confirmacao e remove o registro quando nao houver dependencia.
 - Formularios podem ser confirmados com Enter, exceto dentro de campos de texto longo.
 - `ADMIN` e `MANAGER` podem gerenciar os cadastros deste incremento.
 - O E2E real cobre criacao de unidade inicial por empresa, variavel, setor, etapa e template, incluindo isolamento multiempresa, CRUD completo e bloqueio de opcoes inativas nos novos vinculos.

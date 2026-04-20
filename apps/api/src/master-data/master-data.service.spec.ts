@@ -30,6 +30,7 @@ describe('MasterDataService', () => {
     id: 'size_1',
     companyId,
     name: 'M',
+    position: 1,
     isActive: true,
     createdAt: now,
     updatedAt: now
@@ -114,36 +115,42 @@ describe('MasterDataService', () => {
   const prisma = {
     measurementUnit: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn()
     },
     variable: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn()
     },
     clothingSize: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn()
     },
     sector: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn()
     },
     stage: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn()
     },
     template: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -155,12 +162,14 @@ describe('MasterDataService', () => {
     },
     customer: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn()
     },
     product: {
       create: jest.fn(),
+      delete: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -282,12 +291,14 @@ describe('MasterDataService', () => {
     await expect(service.createSize(companyId, { name: ' M ' })).resolves.toEqual({
       id: 'size_1',
       name: 'M',
+      position: 1,
       isActive: true
     });
     expect(prisma.clothingSize.create).toHaveBeenCalledWith({
       data: {
         companyId,
         name: 'M',
+        position: 0,
         isActive: true
       }
     });

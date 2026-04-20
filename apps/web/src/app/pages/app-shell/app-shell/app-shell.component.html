@@ -1,0 +1,77 @@
+<main class="orders-app" *ngIf="session$ | async as session">
+  <aside class="orders-app__sidebar" aria-label="Navegação principal">
+    <div class="orders-app__brand">
+      <span class="orders-app__brand-mark">T</span>
+      <div>
+        <strong>Trinus</strong>
+        <span>Controle operacional</span>
+      </div>
+    </div>
+
+    <nav class="orders-app__nav" aria-label="Areas do sistema">
+      <a
+        class="orders-app__nav-button"
+        routerLink="/dashboard"
+        routerLinkActive="orders-app__nav-button--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <span>Dashboard</span>
+        <small>Visão geral</small>
+      </a>
+
+      <a class="orders-app__nav-button" routerLink="/pedidos/dashboard" routerLinkActive="orders-app__nav-button--active">
+        <span>Pedidos</span>
+        <small>Resumo do módulo</small>
+      </a>
+
+      <a class="orders-app__nav-button" routerLink="/clientes" routerLinkActive="orders-app__nav-button--active">
+        <span>Clientes</span>
+        <small>Base comercial</small>
+      </a>
+
+      <a class="orders-app__nav-button" routerLink="/produtos" routerLinkActive="orders-app__nav-button--active">
+        <span>Produtos</span>
+        <small>Itens vendidos</small>
+      </a>
+
+      <a
+        class="orders-app__nav-button"
+        routerLink="/usuarios"
+        routerLinkActive="orders-app__nav-button--active"
+        *ngIf="session.user.role === 'ADMIN'"
+      >
+        <span>Usuários</span>
+        <small>Acessos da empresa</small>
+      </a>
+
+      <a class="orders-app__nav-button" routerLink="/configuracoes" routerLinkActive="orders-app__nav-button--active">
+        <span>Configurações</span>
+        <small>Cadastros base</small>
+      </a>
+    </nav>
+  </aside>
+
+  <section class="orders-app__workspace">
+    <header class="orders-app__topbar" *ngIf="pageData$ | async as pageData">
+      <div>
+        <p class="orders-app__eyebrow">{{ pageData.eyebrow }}</p>
+        <h1 class="orders-app__title">{{ pageData.title }}</h1>
+      </div>
+      <div class="orders-app__session">
+        <strong>{{ session.user.name }}</strong>
+        <span>{{ session.company.name }} - {{ roleLabels[session.user.role] }}</span>
+        <button type="button" class="orders-app__button orders-app__button--secondary" (click)="logout()">
+          Sair
+        </button>
+      </div>
+    </header>
+
+    <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
+
+    <div class="orders-app__loading" *ngIf="isLoadingOrders">Atualizando pedidos...</div>
+
+    <router-outlet></router-outlet>
+  </section>
+</main>

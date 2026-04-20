@@ -89,6 +89,7 @@ A suite em `e2e/phase1-master-data.spec.ts` cobre:
   - a mesma empresa nao pode duplicar o registro;
   - empresas diferentes podem usar o mesmo nome ou sigla sem conflito.
 - Fluxos CRUD devem cobrir, no minimo, listar, filtrar, criar, editar e excluir ou inativar.
+- Quando uma tela oferecer `Inativar` e `Excluir`, o E2E deve cobrir pelo menos uma inativacao e uma exclusao real em registro sem dependencia.
 - Testes que validam regras de autorizacao ou isolamento devem usar backend real e banco E2E descartavel.
 
 ## Observacoes

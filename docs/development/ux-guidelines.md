@@ -57,6 +57,8 @@ O design deve priorizar clareza operacional em vez de densidade de informação.
 - No mobile, o drawer deve se comportar como tela cheia ou sheet para preservar espaço e legibilidade.
 - Cadastros complexos devem usar página própria de formulário.
 - A decisão não deve considerar só quantidade de campos: dependência entre campos, seções, itens dinâmicos, anexos, cálculo, revisão final e risco operacional tornam o cadastro complexo.
+- Quando um formulário depender de muitos registros de outro cadastro, o campo deve usar select com busca local dentro do próprio popup de opções.
+- Filtros de select devem ficar acima das opções no popup, evitando campos de filtro soltos no formulário.
 - Ações destrutivas devem pedir confirmação antes de executar.
 - Quando um registro puder ter histórico operacional, a ação principal deve ser desativar/inativar; exclusão física deve ser usada apenas quando a regra permitir.
 

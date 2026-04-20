@@ -140,6 +140,7 @@ Permitir registrar pedidos reais com cliente, itens, quantidades, tamanhos e pro
 - Selecionar produto.
 - Cadastrar produto rapidamente no contexto do pedido.
 - Informar quantidade geral ou quantidades por tamanho.
+- O item do pedido deve aceitar quantidade unica ou grade de tamanhos, dependendo do produto e da necessidade do usuario.
 - Aplicar template de producao ao item.
 - Comecar producao do zero quando nao houver template.
 - Editar parcialmente etapas sugeridas pelo template.

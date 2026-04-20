@@ -1,0 +1,14 @@
+﻿.shared-list {
+        display: grid;
+        gap: 14px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .shared-list__item {
+        padding: 16px;
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        background: #fbfcfc;
+      }

@@ -78,10 +78,32 @@ async function filterRecord(page: Page, search: string, visibleText: string, hid
 
 async function deactivateRecord(page: Page, visibleText: string): Promise<void> {
   const row = page.locator('.settings-crud__item').filter({ hasText: visibleText });
-  await row.getByRole('button', { name: 'Inativar' }).click();
+  await row.getByRole('button', { name: 'Mais opcoes' }).click();
+  await page.getByRole('menu').getByRole('menuitem', { name: 'Inativar' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Inativar' }).click();
   await expect(page.getByText('Cadastro inativado com sucesso.')).toBeVisible();
   await expect(row.getByText('Inativo')).toBeVisible();
+}
+
+async function deleteRecord(page: Page, visibleText: string): Promise<void> {
+  const row = page.locator('.settings-crud__item').filter({ hasText: visibleText });
+  await row.getByRole('button', { name: 'Mais opcoes' }).click();
+  await page.getByRole('menu').getByRole('menuitem', { name: 'Excluir' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Excluir' }).click();
+  await expect(page.getByText('Cadastro excluido com sucesso.')).toBeVisible();
+  await expect(row).toHaveCount(0);
+}
+
+async function selectSearchableOption(page: Page, label: string, option: string): Promise<void> {
+  await page.getByRole('combobox', { name: label, exact: true }).click();
+  await page.getByRole('listbox', { name: label, exact: true }).getByRole('option', { name: option, exact: true }).click();
+}
+
+async function expectSearchableOptionAbsent(page: Page, label: string, option: string): Promise<void> {
+  const combobox = page.getByRole('combobox', { name: label, exact: true });
+  await combobox.click();
+  await expect(page.getByRole('listbox', { name: label, exact: true }).getByRole('option', { name: option, exact: true })).toHaveCount(0);
+  await combobox.click();
 }
 
 test.describe('Fase 1 - cadastros base reais', () => {
@@ -118,10 +140,10 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.goto('/configuracoes/etapas');
     await page.getByRole('button', { name: /Nova etapa/ }).first().click();
     await page.getByLabel('Nome').fill('Cortar tecido');
-    await page.getByLabel('Setor').selectOption({ label: 'Corte' });
-    await page.getByLabel('Unidade de medida').selectOption({ label: 'Metro (m)' });
+    await selectSearchableOption(page, 'Setor', 'Corte');
+    await selectSearchableOption(page, 'Unidade de medida', 'Metro (m)');
     await page.getByRole('spinbutton', { name: /Capacidade/ }).fill('120');
-    await page.getByLabel('Variável opcional').selectOption({ label: 'Estampas' });
+    await selectSearchableOption(page, 'Variável opcional', 'Estampas');
     await page.getByRole('button', { name: 'Salvar cadastro' }).click();
     await expect(page.getByText('Cadastro salvo com sucesso.')).toBeVisible();
     await expect(page.getByText('Cortar tecido')).toBeVisible();
@@ -131,7 +153,7 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.getByRole('button', { name: /Novo template/ }).first().click();
     await page.getByLabel('Nome').fill('Camisa DTF');
     await page.getByLabel('Descrição opcional').fill('Fluxo inicial para camisa DTF.');
-    await page.getByLabel('Etapa 1').selectOption({ label: 'Cortar tecido' });
+    await selectSearchableOption(page, 'Etapa 1', 'Cortar tecido');
     await page.getByRole('button', { name: 'Salvar cadastro' }).click();
     await expect(page.getByText('Cadastro salvo com sucesso.')).toBeVisible();
     await expect(page.getByText('Camisa DTF')).toBeVisible();
@@ -185,14 +207,14 @@ test.describe('Fase 1 - cadastros base reais', () => {
 
     await page.goto('/configuracoes/etapas');
     await page.getByRole('button', { name: /Nova etapa/ }).first().click();
-    await expect(page.locator('select[formControlName="sectorId"] option', { hasText: 'Costura revisada' })).toHaveCount(0);
-    await expect(page.locator('select[formControlName="measurementUnitId"] option', { hasText: 'Litro revisado' })).toHaveCount(0);
-    await expect(page.locator('select[formControlName="variableId"] option', { hasText: 'Estampas revisadas' })).toHaveCount(0);
+    await expectSearchableOptionAbsent(page, 'Setor', 'Costura revisada');
+    await expectSearchableOptionAbsent(page, 'Unidade de medida', 'Litro revisado');
+    await expectSearchableOptionAbsent(page, 'Variável opcional', 'Estampas revisadas');
     await page.getByLabel('Nome').fill('Cortar CRUD');
-    await page.getByLabel('Setor').selectOption({ label: 'Corte CRUD' });
-    await page.getByLabel('Unidade de medida').selectOption({ label: 'Metro (m)' });
+    await selectSearchableOption(page, 'Setor', 'Corte CRUD');
+    await selectSearchableOption(page, 'Unidade de medida', 'Metro (m)');
     await page.getByRole('spinbutton', { name: /Capacidade/ }).fill('90');
-    await page.getByLabel('Variável opcional').selectOption({ label: 'Camadas CRUD' });
+    await selectSearchableOption(page, 'Variável opcional', 'Camadas CRUD');
     await saveAndExpect(page, 'Cortar CRUD');
     await filterRecord(page, 'cortar', 'Cortar CRUD');
     await page.getByLabel('Busca').fill('');
@@ -202,8 +224,8 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.goto('/configuracoes/etapas');
     await page.getByRole('button', { name: /Nova etapa/ }).first().click();
     await page.getByLabel('Nome').fill('Conferir CRUD');
-    await page.getByLabel('Setor').selectOption({ label: 'Corte CRUD' });
-    await page.getByLabel('Unidade de medida').selectOption({ label: 'Metro (m)' });
+    await selectSearchableOption(page, 'Setor', 'Corte CRUD');
+    await selectSearchableOption(page, 'Unidade de medida', 'Metro (m)');
     await page.getByRole('spinbutton', { name: /Capacidade/ }).fill('45');
     await page.getByRole('button', { name: 'Salvar cadastro' }).click();
     await expect(page.getByText('Conferir CRUD', { exact: true })).toBeVisible();
@@ -211,8 +233,8 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.goto('/configuracoes/etapas');
     await page.getByRole('button', { name: /Nova etapa/ }).first().click();
     await page.getByLabel('Nome').fill('Embalar CRUD');
-    await page.getByLabel('Setor').selectOption({ label: 'Corte CRUD' });
-    await page.getByLabel('Unidade de medida').selectOption({ label: 'Metro (m)' });
+    await selectSearchableOption(page, 'Setor', 'Corte CRUD');
+    await selectSearchableOption(page, 'Unidade de medida', 'Metro (m)');
     await page.getByRole('spinbutton', { name: /Capacidade/ }).fill('30');
     await page.getByRole('button', { name: 'Salvar cadastro' }).click();
     await expect(page.getByText('Embalar CRUD', { exact: true })).toBeVisible();
@@ -220,16 +242,16 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.goto('/configuracoes/templates-producao');
     await page.getByRole('button', { name: /Novo template/ }).first().click();
     await page.getByLabel('Nome').fill('Template CRUD');
-    await expect(page.locator('select[formControlName="stageId"]').first().locator('option', { hasText: 'Cortar revisado' })).toHaveCount(0);
-    await page.getByLabel('Etapa 1').selectOption({ label: 'Conferir CRUD' });
+    await expectSearchableOptionAbsent(page, 'Etapa 1', 'Cortar revisado');
+    await selectSearchableOption(page, 'Etapa 1', 'Conferir CRUD');
     await page.getByRole('button', { name: 'Adicionar etapa' }).click();
-    await page.getByLabel('Etapa 2').selectOption({ label: 'Embalar CRUD' });
+    await selectSearchableOption(page, 'Etapa 2', 'Embalar CRUD');
     await page.getByRole('button', { name: 'Subir item 2 do template' }).click();
     await saveAndExpect(page, 'Template CRUD');
     await filterRecord(page, 'template', 'Template CRUD');
     await page.getByLabel('Busca').fill('');
     await page.locator('.settings-crud__item').filter({ hasText: 'Template CRUD' }).getByRole('button', { name: 'Editar cadastro' }).click();
-    await expect(page.getByLabel('Etapa 1').locator('option:checked')).toHaveText('Embalar CRUD');
+    await expect(page.getByRole('combobox', { name: 'Etapa 1', exact: true })).toContainText('Embalar CRUD');
     await page.locator('.settings-crud__drawer').getByLabel('Nome').fill('Template revisado');
     await saveAndExpect(page, 'Template revisado');
     await deactivateRecord(page, 'Template revisado');
@@ -237,11 +259,13 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.goto('/configuracoes/tamanhos');
     await page.getByRole('button', { name: /Novo tamanho/ }).first().click();
     await page.getByLabel('Nome').fill('M CRUD');
+    await page.getByLabel('Posicao').fill('2');
     await saveAndExpect(page, 'M CRUD');
     await filterRecord(page, 'm crud', 'M CRUD');
     await page.getByLabel('Busca').fill('');
     await editRecord(page, 'M CRUD', 'M revisado');
     await deactivateRecord(page, 'M revisado');
+    await deleteRecord(page, 'M revisado');
 
     await page.goto('/clientes');
     await page.getByRole('button', { name: /Novo cliente/ }).first().click();
@@ -253,19 +277,23 @@ test.describe('Fase 1 - cadastros base reais', () => {
     await page.getByLabel('Busca').fill('');
     await editRecord(page, 'Cliente CRUD', 'Cliente revisado');
     await deactivateRecord(page, 'Cliente revisado');
+    await deleteRecord(page, 'Cliente revisado');
 
     await page.goto('/produtos');
     await page.getByRole('button', { name: /Novo produto/ }).first().click();
     await page.getByLabel('Nome').fill('Camiseta CRUD');
     await page.getByLabel('Custo do produto').fill('15.50');
     await page.getByLabel('Preco de venda').fill('39.90');
-    await page.getByLabel('Variavel 1').selectOption({ label: 'Camadas CRUD' });
+    await expect(page.getByRole('combobox', { name: 'Variavel 1', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Adicionar variavel' }).click();
+    await selectSearchableOption(page, 'Variavel 1', 'Camadas CRUD');
     await page.getByLabel('Valor padrao').fill('2');
     await saveAndExpect(page, 'Camiseta CRUD');
     await filterRecord(page, 'camiseta', 'Camiseta CRUD');
     await page.getByLabel('Busca').fill('');
     await editRecord(page, 'Camiseta CRUD', 'Camiseta revisada');
     await deactivateRecord(page, 'Camiseta revisada');
+    await deleteRecord(page, 'Camiseta revisada');
   });
 
   test('isola cadastros base por empresa e permite nomes iguais em empresas diferentes', async () => {

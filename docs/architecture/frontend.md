@@ -1,4 +1,4 @@
-# Arquitetura do Front-end
+﻿# Arquitetura do Front-end
 
 O front-end usa componentes standalone do Angular e rotas como unidade principal de composição. O `AppComponent` fica restrito ao bootstrap visual do router, sem regras de página, estado de formulário ou sincronização manual com URL.
 
@@ -8,7 +8,10 @@ O front-end usa componentes standalone do Angular e rotas como unidade principal
 - `apps/web/src/app/pages/app-shell`: layout autenticado, navegação principal, topbar e mensagens globais.
 - `apps/web/src/app/shared`: componentes e serviços reutilizáveis no front, sem responsabilidade de chamada HTTP.
 - `apps/web/src/app/services-api`: services, guards e interceptors ligados a autenticação e chamadas de API.
-- Cada componente deve manter seus arquivos no mesmo diretório e contexto: `.component.ts`, `.component.html`, `.component.css` quando houver estilo específico, e `.component.spec.ts`.
+- Cada componente deve ficar em pasta própria com quatro arquivos obrigatórios: `.component.ts`, `.component.html`, `.component.css` e `.component.spec.ts`.
+- Não criar novos componentes soltos dentro de uma pasta de contexto, como `pages/settings/customers-page.component.ts` ou `pages/orders/order-form-page.component.ts`. O componente deve viver em `customers-page/customers-page.component.*`, `order-form-page/order-form-page.component.*` ou equivalente.
+- Templates inline são permitidos apenas em specs para componentes host de teste. Componentes de produto, página, shell, CRUD, formulário, lista, menu, drawer ou qualquer componente estrutural devem usar arquivo `.component.html` separado.
+- Estilos inline não devem ser usados em componentes de produto. Mesmo quando o componente não possuir estilo específico, manter o `.component.css` vazio para preservar o padrão de organização.
 - Cada service deve manter seu teste no mesmo diretório: `auth.service.ts` com `auth.service.spec.ts`, `users.service.ts` com `users.service.spec.ts`, e assim por diante.
 
 ## Roteamento
@@ -34,6 +37,10 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 ## Responsabilidades
 
 - Páginas mantêm estado e regras da própria tela, como formulários e validações.
+- Cada rota funcional deve carregar um componente de página dono daquela tela. Não criar componentes genéricos baseados em `kind`, `type`, `mode` ou `ngSwitch` para acelerar entrega quando isso misturar regras de domínios diferentes.
+- Acelerar implementação não justifica concentrar responsabilidades de telas diferentes no mesmo componente. A regra principal é código limpo, arquitetura limpa, reaproveitamento explícito de componentes e responsabilidades isoladas.
+- Reaproveitamento deve acontecer por componentes menores e sem regra de domínio, como shell de CRUD, lista, select, erro de campo, toast e confirmação.
+- Formulários, normalização de payload, carregamento de dependências e regras específicas devem ficar na página dona da rota.
 - `services-api` concentra chamadas HTTP, normalização de dados recebidos e controle de sessão, mas cada service deve representar um contexto funcional único.
 - `AuthService` deve cuidar apenas de autenticação, sessão, login, cadastro, refresh e logout.
 - Contextos diferentes devem ter services próprios, como `UsersService` para usuários e `OrdersService` para pedidos.
@@ -68,6 +75,7 @@ As rotas autenticadas passam pelo `authGuard`, que verifica a sessão usando `Au
 ## Testes
 
 - Specs devem ficar no mesmo diretório e contexto do arquivo testado.
+- Todo componente novo ou refatorado deve nascer com spec ao lado, ainda que o primeiro teste valide apenas a criação do componente e o wiring básico de dependências.
 - Fluxos de pedidos devem ser testados nos componentes de pedidos, não em `app.component.spec.ts`.
 - Fluxos de autenticação devem ser testados nos componentes ou services de autenticação.
 - Services de API devem ter specs próprias por contexto.
