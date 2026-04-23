@@ -82,6 +82,23 @@ A suite em `e2e/phase1-master-data.spec.ts` cobre:
 - Nomes iguais em empresas diferentes sem conflito.
 - Bloqueio de alteracao de registro de outra empresa.
 
+## Cobertura Atual da Fase 2
+
+A suite em `e2e/phase2-operational-orders.spec.ts` cobre:
+
+- Criacao de pedido operacional com cliente, produto e template de producao reais.
+- Edicao de pedido criado, mantendo persistencia no backend real.
+- Template aplicado por item copiando etapas para o pedido sem alterar o template original.
+- Validacao via API dos vinculos salvos no pedido:
+  - cliente;
+  - produto;
+  - template;
+  - etapas copiadas;
+  - quantidade do item.
+- Isolamento multiempresa de pedidos.
+- Permissao de mesmo codigo de pedido em empresas diferentes.
+- Bloqueio de pedido usando cliente de outra empresa.
+
 ## Regras Obrigatorias Para Novos E2E
 
 - Todo modulo multiempresa deve ter teste E2E ou de integracao real garantindo que dados da Empresa A nao aparecem, nao conflitam e nao podem ser alterados pela Empresa B.

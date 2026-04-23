@@ -10,6 +10,7 @@ class OrdersServiceStub {
     {
       id: 'ORD-2001',
       orderNumber: '2001',
+      customerId: 'customer_1',
       customerName: 'Cia. Aurora',
       status: 'REGISTERED',
       startDate: '2026-04-09',
@@ -17,6 +18,19 @@ class OrdersServiceStub {
       riskLevel: 'LOW',
       riskReason: 'Pedido dentro do prazo.',
       nextStep: 'Confirmar produção.',
+      items: [
+        {
+          id: 'item_1',
+          productId: 'product_1',
+          productName: 'Calça jogger',
+          position: 0,
+          quantityMode: 'SINGLE',
+          quantity: 34,
+          sizes: [],
+          stages: [],
+          totalQuantity: 34
+        }
+      ],
       products: [{ name: 'Calça jogger', quantity: 34 }]
     }
   ]);

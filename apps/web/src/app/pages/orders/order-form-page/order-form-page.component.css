@@ -1,0 +1,140 @@
+.order-form {
+  max-width: 1120px;
+}
+
+.order-form__section-heading {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.order-form__field-with-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.order-form__item {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fbfcfc;
+}
+
+.order-form__item-header,
+.order-form__stages-header,
+.order-form__template-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-form__item-header div {
+  display: grid;
+  gap: 4px;
+}
+
+.order-form__item-header span {
+  color: var(--color-muted);
+}
+
+.order-form__segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.order-form__segmented-button {
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.order-form__segmented-button--active {
+  border-color: var(--color-primary);
+  background: rgba(31, 122, 91, 0.1);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.order-form__size-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+.order-form__template-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.order-form__template-actions {
+  justify-content: flex-end;
+}
+
+.order-form__stages {
+  display: grid;
+  gap: 12px;
+}
+
+.order-form__stage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.order-form__drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
+.order-form__drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 33, 29, 0.42);
+}
+
+.order-form__drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 100%);
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 24px;
+  background: var(--color-surface);
+  box-shadow: -18px 0 44px rgba(23, 33, 29, 0.16);
+}
+
+.order-form__drawer-panel h2 {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .order-form__field-with-action,
+  .order-form__template-block,
+  .order-form__stage-row,
+  .order-form__size-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-form__item-header,
+  .order-form__stages-header,
+  .order-form__template-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

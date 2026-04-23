@@ -16,21 +16,19 @@ export class OrdersService {
   readonly orders$ = this.ordersSubject.asObservable();
 
   loadOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(ordersApiUrl(), { withCredentials: true }).pipe(
-      map((orders) => this.persistOrders(orders))
-    );
+    return this.http.get<Order[]>(ordersApiUrl(), { withCredentials: true }).pipe(map((orders) => this.persistOrders(orders)));
+  }
+
+  getOrder(id: string): Observable<Order> {
+    return this.http.get<Order>(`${ordersApiUrl()}/${id}`, { withCredentials: true }).pipe(map((order) => this.persistOrder(order)));
   }
 
   createOrder(request: CreateOrderInput): Observable<Order> {
-    return this.http.post<Order>(ordersApiUrl(), request, { withCredentials: true }).pipe(
-      map((order) => this.persistOrder(order))
-    );
+    return this.http.post<Order>(ordersApiUrl(), request, { withCredentials: true }).pipe(map((order) => this.persistOrder(order)));
   }
 
   updateOrder(id: string, request: UpdateOrderInput): Observable<Order> {
-    return this.http.patch<Order>(`${ordersApiUrl()}/${id}`, request, { withCredentials: true }).pipe(
-      map((order) => this.persistOrder(order))
-    );
+    return this.http.patch<Order>(`${ordersApiUrl()}/${id}`, request, { withCredentials: true }).pipe(map((order) => this.persistOrder(order)));
   }
 
   resetOrders(): void {
@@ -55,26 +53,31 @@ export class OrdersService {
     return normalizedOrder;
   }
 
-  private buildOrderId(): string {
-    return `order_${Date.now().toString(36)}`;
-  }
+  private normalizeOrder(order: Order): Order {
+    const items = (order.items ?? []).map((item) => ({
+      ...item,
+      quantity: item.quantity === undefined ? undefined : Number(item.quantity),
+      sizes: (item.sizes ?? []).map((size) => ({ ...size, quantity: Number(size.quantity) })),
+      stages: item.stages ?? [],
+      totalQuantity:
+        item.quantityMode === 'SINGLE'
+          ? Number(item.quantity ?? 0)
+          : (item.sizes ?? []).reduce((sum, size) => sum + Number(size.quantity), 0)
+    }));
 
-  private normalizeOrder(order: Partial<Order>): Order {
     return {
-      id: order.id ?? this.buildOrderId(),
+      ...order,
       orderNumber: order.orderNumber?.trim() ?? '',
       customerName: order.customerName?.trim() ?? '',
       startDate: order.startDate ?? '',
       deliveryDate: order.deliveryDate ?? '',
       status: this.normalizeStatus(order.status),
       riskLevel: order.riskLevel ?? 'LOW',
-      riskReason: order.riskReason?.trim() ?? 'Pedido aguardando análise operacional.',
-      nextStep: order.nextStep?.trim() ?? 'Confirmar detalhes do pedido.',
+      riskReason: order.riskReason?.trim() ?? 'Pedido aguardando cálculo de risco.',
+      nextStep: order.nextStep?.trim() ?? 'Definir etapas de produção.',
       finalNotes: order.finalNotes?.trim() || undefined,
-      products: (order.products ?? []).map((product) => ({
-        name: product.name.trim(),
-        quantity: Number(product.quantity)
-      }))
+      items,
+      products: items.map((item) => ({ name: item.productName, quantity: item.totalQuantity }))
     };
   }
 
@@ -87,6 +90,9 @@ export class OrdersService {
   }
 
   private sortOrders(orders: ReadonlyArray<Order>): Order[] {
-    return [...orders].sort((left, right) => right.deliveryDate.localeCompare(left.deliveryDate));
+    return [...orders].sort((left, right) => {
+      const deliveryCompare = (left.deliveryDate || '9999-12-31').localeCompare(right.deliveryDate || '9999-12-31');
+      return deliveryCompare || right.orderNumber.localeCompare(left.orderNumber);
+    });
   }
 }

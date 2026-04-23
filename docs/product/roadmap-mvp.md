@@ -118,6 +118,20 @@ Permitir que a empresa configure a base necessaria para criar pedidos e template
 
 ## Fase 2: Pedido Operacional
 
+Status: concluido.
+
+Entregue:
+
+- Persistencia real de pedidos por empresa.
+- Criar e editar pedido com cliente real.
+- Itens do pedido vinculados a produto real.
+- Quantidade unica ou grade de tamanhos por item.
+- Template de producao aplicado por item.
+- Etapas copiadas para o item do pedido e editaveis sem alterar o template original.
+- Cadastro rapido de cliente e produto no formulario de pedido.
+- Lista de pedidos conectada ao backend real.
+- Teste E2E real de criacao, edicao e isolamento multiempresa.
+
 ## Objetivo
 
 Permitir registrar pedidos reais com cliente, itens, quantidades, tamanhos e producao por item.

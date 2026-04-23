@@ -1,121 +1,146 @@
 import { BadRequestException } from '@nestjs/common';
-import type { CreateOrderInput, Order } from '@trinus/contracts';
-import { OrdersRepository } from './orders.repository';
 import { OrdersService } from './orders.service';
 
+const orderRecord = {
+  id: 'order_1',
+  companyId: 'company_1',
+  customerId: 'customer_1',
+  orderNumber: '1001',
+  status: 'REGISTERED',
+  startDate: new Date('2026-04-08T00:00:00'),
+  deliveryDate: new Date('2026-04-15T00:00:00'),
+  finalNotes: 'Separar por tamanho.',
+  createdAt: new Date('2026-04-01T00:00:00'),
+  updatedAt: new Date('2026-04-01T00:00:00'),
+  customer: { id: 'customer_1', companyId: 'company_1', name: 'Alpha Uniforms', cpf: null, cnpj: null, address: null, mobilePhone: null, landlinePhone: null, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  items: [
+    {
+      id: 'item_1',
+      orderId: 'order_1',
+      productId: 'product_1',
+      templateId: null,
+      position: 0,
+      quantityMode: 'SINGLE',
+      quantity: 120,
+      notes: null,
+      product: { id: 'product_1', companyId: 'company_1', name: 'Polo shirt', costPrice: 10, salePrice: 20, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      template: null,
+      sizes: [],
+      stages: []
+    }
+  ]
+};
+
 describe('OrdersService', () => {
-  const companyId = 'company_1';
-  const order: Order = {
-    id: 'order_1',
-    orderNumber: '1001',
-    customerName: 'Alpha Uniforms',
-    status: 'REGISTERED',
-    startDate: '2026-04-08',
-    deliveryDate: '2026-04-15',
-    riskLevel: 'LOW',
-    riskReason: 'Order is within the planned window.',
-    nextStep: 'Confirm production requirements.',
-    finalNotes: 'Pack separately.',
-    products: [{ name: 'Polo shirt', quantity: 120 }]
+  const prisma = {
+    order: {
+      findMany: jest.fn(),
+      findFirst: jest.fn()
+    },
+    customer: {
+      findFirst: jest.fn()
+    },
+    product: {
+      findFirst: jest.fn()
+    },
+    clothingSize: {
+      findMany: jest.fn()
+    },
+    template: {
+      findFirst: jest.fn()
+    },
+    stage: {
+      findMany: jest.fn()
+    },
+    $transaction: jest.fn()
   };
 
-  const repository: jest.Mocked<OrdersRepository> = {
-    findAll: jest.fn().mockReturnValue([order]),
-    findById: jest.fn().mockImplementation((_: string, id: string) => (id === order.id ? order : null)),
-    save: jest.fn().mockImplementation((_: string, value: Order) => value),
-    update: jest.fn().mockImplementation((_: string, __: string, value: Order) => value)
-  };
-
-  const service = new OrdersService(repository);
+  let service: OrdersService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  it('lists orders', () => {
-    expect(service.findAll(companyId)).toEqual([order]);
-    expect(repository.findAll).toHaveBeenCalledWith(companyId);
-  });
-
-  it('finds an order by id', () => {
-    expect(service.findById(companyId, 'order_1')).toEqual(order);
-    expect(repository.findById).toHaveBeenCalledWith(companyId, 'order_1');
-  });
-
-  it('creates an order with defaults', () => {
-    const input: CreateOrderInput = {
-      orderNumber: '1003',
-      customerName: 'Gamma Studio',
-      finalNotes: 'Deliver after 2 PM.',
-      products: [{ name: 'Cap', quantity: 40.25 }]
-    };
-
-    const created = service.create(companyId, input);
-
-    expect(repository.save).toHaveBeenCalledTimes(1);
-    expect(created).toMatchObject({
-      orderNumber: '1003',
-      customerName: 'Gamma Studio',
-      status: 'REGISTERED',
-      riskLevel: 'LOW',
-      riskReason: 'Order is waiting for an operational review.',
-      nextStep: 'Confirm order details.',
-      finalNotes: 'Deliver after 2 PM.',
-      products: [{ name: 'Cap', quantity: 40.25 }]
-    });
-    expect(created.id).toEqual(expect.any(String));
-    expect(created.startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(created.deliveryDate).toEqual(created.startDate);
-  });
-
-  it('updates an existing order', () => {
-    const updated = service.update(companyId, 'order_1', {
-      customerName: 'Updated Customer',
-      finalNotes: 'Updated notes.',
-      products: [{ name: 'Updated item', quantity: 12 }]
-    });
-
-    expect(repository.update).toHaveBeenCalledWith(
-      companyId,
-      'order_1',
-      expect.objectContaining({
-        id: 'order_1',
-        orderNumber: '1001',
-        customerName: 'Updated Customer',
-        finalNotes: 'Updated notes.',
-        products: [{ name: 'Updated item', quantity: 12 }]
+    prisma.order.findMany.mockResolvedValue([orderRecord]);
+    prisma.order.findFirst.mockResolvedValue(orderRecord);
+    prisma.customer.findFirst.mockResolvedValue({ id: 'customer_1' });
+    prisma.product.findFirst.mockResolvedValue({ id: 'product_1' });
+    prisma.clothingSize.findMany.mockResolvedValue([{ id: 'size_p' }]);
+    prisma.template.findFirst.mockResolvedValue(null);
+    prisma.stage.findMany.mockResolvedValue([]);
+    prisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        order: {
+          create: jest.fn().mockResolvedValue({ id: 'order_2' }),
+          update: jest.fn().mockResolvedValue({ id: 'order_1' }),
+          findFirst: jest.fn().mockResolvedValue({ ...orderRecord, id: 'order_2', orderNumber: '1002' })
+        },
+        orderItem: {
+          create: jest.fn().mockResolvedValue({ id: 'item_2' }),
+          deleteMany: jest.fn().mockResolvedValue({ count: 1 })
+        },
+        orderItemSize: {
+          createMany: jest.fn().mockResolvedValue({ count: 0 })
+        },
+        orderItemStage: {
+          createMany: jest.fn().mockResolvedValue({ count: 0 })
+        }
       })
     );
-    expect(updated).toMatchObject({
-      id: 'order_1',
-      customerName: 'Updated Customer'
+    service = new OrdersService(prisma as never);
+  });
+
+  it('lists orders mapped from Prisma', async () => {
+    await expect(service.findAll('company_1')).resolves.toEqual([
+      expect.objectContaining({
+        id: 'order_1',
+        customerId: 'customer_1',
+        customerName: 'Alpha Uniforms',
+        products: [{ name: 'Polo shirt', quantity: 120 }]
+      })
+    ]);
+    expect(prisma.order.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { companyId: 'company_1' } }));
+  });
+
+  it('creates an order with a valid item', async () => {
+    await expect(
+      service.create('company_1', {
+        orderNumber: '1002',
+        customerId: 'customer_1',
+        items: [{ productId: 'product_1', quantityMode: 'SINGLE', quantity: 40 }]
+      })
+    ).resolves.toMatchObject({
+      id: 'order_2',
+      orderNumber: '1002',
+      customerId: 'customer_1'
     });
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects product quantity with more than two decimal places', () => {
-    const input: CreateOrderInput = {
-      orderNumber: '1003',
-      customerName: 'Gamma Studio',
-      products: [{ name: 'Cap', quantity: 1.234 }]
-    };
-
-    expect(() => service.create(companyId, input)).toThrow(BadRequestException);
-    expect(repository.save).not.toHaveBeenCalled();
+  it('rejects quantity with more than two decimal places', async () => {
+    await expect(
+      service.create('company_1', {
+        orderNumber: '1003',
+        customerId: 'customer_1',
+        items: [{ productId: 'product_1', quantityMode: 'SINGLE', quantity: 1.234 }]
+      })
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
-  it('rejects product quantity less than or equal to zero', () => {
-    const input: CreateOrderInput = {
-      orderNumber: '1003',
-      customerName: 'Gamma Studio',
-      products: [{ name: 'Cap', quantity: 0 }]
-    };
+  it('rejects a customer from another company', async () => {
+    prisma.customer.findFirst.mockResolvedValueOnce(null);
 
-    expect(() => service.create(companyId, input)).toThrow(BadRequestException);
-    expect(repository.save).not.toHaveBeenCalled();
+    await expect(
+      service.create('company_1', {
+        orderNumber: '1003',
+        customerId: 'customer_other',
+        items: [{ productId: 'product_1', quantityMode: 'SINGLE', quantity: 12 }]
+      })
+    ).rejects.toThrow(BadRequestException);
   });
 
-  it('returns null when updating a missing order', () => {
-    expect(service.update(companyId, 'missing', { customerName: 'Updated Customer' })).toBeNull();
-    expect(repository.update).not.toHaveBeenCalled();
+  it('returns null when updating a missing order', async () => {
+    prisma.order.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.update('company_1', 'missing', { orderNumber: '1001-A' })).resolves.toBeNull();
   });
 });

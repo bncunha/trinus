@@ -13,13 +13,13 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  getOrders(@Req() request: RequestWithAuth): Order[] {
+  getOrders(@Req() request: RequestWithAuth): Promise<Order[]> {
     return this.ordersService.findAll(request.auth.user.companyId);
   }
 
   @Get(':id')
-  getOrderById(@Req() request: RequestWithAuth, @Param('id') id: string): Order {
-    const order = this.ordersService.findById(request.auth.user.companyId, id);
+  async getOrderById(@Req() request: RequestWithAuth, @Param('id') id: string): Promise<Order> {
+    const order = await this.ordersService.findById(request.auth.user.companyId, id);
 
     if (order === null) {
       throw new NotFoundException('Order not found');
@@ -29,13 +29,13 @@ export class OrdersController {
   }
 
   @Post()
-  createOrder(@Req() request: RequestWithAuth, @Body() body: CreateOrderInput): Order {
+  createOrder(@Req() request: RequestWithAuth, @Body() body: CreateOrderInput): Promise<Order> {
     return this.ordersService.create(request.auth.user.companyId, body);
   }
 
   @Patch(':id')
-  updateOrder(@Req() request: RequestWithAuth, @Param('id') id: string, @Body() body: UpdateOrderInput): Order {
-    const order = this.ordersService.update(request.auth.user.companyId, id, body);
+  async updateOrder(@Req() request: RequestWithAuth, @Param('id') id: string, @Body() body: UpdateOrderInput): Promise<Order> {
+    const order = await this.ordersService.update(request.auth.user.companyId, id, body);
 
     if (order === null) {
       throw new NotFoundException('Order not found');

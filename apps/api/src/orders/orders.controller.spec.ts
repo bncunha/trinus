@@ -24,38 +24,49 @@ describe('OrdersController', () => {
   const order: Order = {
     id: 'order_1',
     orderNumber: '1001',
+    customerId: 'customer_1',
     customerName: 'Alpha Uniforms',
     status: 'REGISTERED',
     startDate: '2026-04-08',
     deliveryDate: '2026-04-15',
     riskLevel: 'LOW',
-    riskReason: 'Order is within the planned window.',
-    nextStep: 'Confirm production requirements.',
+    riskReason: 'Pedido aguardando cálculo de risco.',
+    nextStep: 'Definir etapas de produção.',
     finalNotes: 'Pack separately.',
+    items: [
+      {
+        id: 'item_1',
+        productId: 'product_1',
+        productName: 'Polo shirt',
+        position: 0,
+        quantityMode: 'SINGLE',
+        quantity: 120,
+        sizes: [],
+        stages: [],
+        totalQuantity: 120
+      }
+    ],
     products: [{ name: 'Polo shirt', quantity: 120 }]
   };
 
   const service = {
-    findAll: jest.fn().mockReturnValue([order]),
-    findById: jest.fn().mockReturnValue(order),
-    create: jest.fn().mockImplementation((_: string, input: CreateOrderInput) => ({
-      id: 'order_2',
-      orderNumber: input.orderNumber,
-      customerName: input.customerName,
-      status: input.status ?? 'REGISTERED',
-      startDate: input.startDate ?? '2026-04-10',
-      deliveryDate: input.deliveryDate ?? '2026-04-10',
-      riskLevel: input.riskLevel ?? 'LOW',
-      riskReason: input.riskReason ?? 'Order is waiting for an operational review.',
-      nextStep: input.nextStep ?? 'Confirm order details.',
-      finalNotes: input.finalNotes,
-      products: input.products
-    })),
-    update: jest.fn().mockImplementation((_: string, id: string, input: Partial<CreateOrderInput>) => ({
-      ...order,
-      ...input,
-      id
-    }))
+    findAll: jest.fn().mockResolvedValue([order]),
+    findById: jest.fn().mockResolvedValue(order),
+    create: jest.fn().mockImplementation((_: string, input: CreateOrderInput) =>
+      Promise.resolve({
+        ...order,
+        id: 'order_2',
+        ...input,
+        customerName: 'Alpha Uniforms'
+      })
+    ),
+    update: jest.fn().mockImplementation((_: string, id: string, input: Partial<CreateOrderInput>) =>
+      Promise.resolve({
+        ...order,
+        ...input,
+        id
+      })
+    )
   } as unknown as jest.Mocked<OrdersService>;
 
   const controller = new OrdersController(service);
@@ -64,48 +75,48 @@ describe('OrdersController', () => {
     jest.clearAllMocks();
   });
 
-  it('returns all orders', () => {
-    expect(controller.getOrders(request)).toEqual([order]);
+  it('returns all orders', async () => {
+    await expect(controller.getOrders(request)).resolves.toEqual([order]);
     expect(service.findAll).toHaveBeenCalledWith('company_1');
   });
 
-  it('returns an order by id', () => {
-    expect(controller.getOrderById(request, 'order_1')).toEqual(order);
+  it('returns an order by id', async () => {
+    await expect(controller.getOrderById(request, 'order_1')).resolves.toEqual(order);
     expect(service.findById).toHaveBeenCalledWith('company_1', 'order_1');
   });
 
-  it('throws when order is not found', () => {
-    service.findById.mockReturnValueOnce(null);
+  it('throws when order is not found', async () => {
+    service.findById.mockResolvedValueOnce(null);
 
-    expect(() => controller.getOrderById(request, 'missing')).toThrow(NotFoundException);
+    await expect(controller.getOrderById(request, 'missing')).rejects.toThrow(NotFoundException);
   });
 
-  it('creates an order', () => {
+  it('creates an order', async () => {
     const input: CreateOrderInput = {
       orderNumber: '1003',
-      customerName: 'Gamma Studio',
-      products: [{ name: 'Cap', quantity: 40 }]
+      customerId: 'customer_1',
+      items: [{ productId: 'product_1', quantityMode: 'SINGLE', quantity: 40 }]
     };
 
-    expect(controller.createOrder(request, input)).toMatchObject({
+    await expect(controller.createOrder(request, input)).resolves.toMatchObject({
       orderNumber: '1003',
-      customerName: 'Gamma Studio',
+      customerId: 'customer_1',
       status: 'REGISTERED'
     });
     expect(service.create).toHaveBeenCalledWith('company_1', input);
   });
 
-  it('updates an order', () => {
-    expect(controller.updateOrder(request, 'order_1', { customerName: 'Updated Customer' })).toMatchObject({
+  it('updates an order', async () => {
+    await expect(controller.updateOrder(request, 'order_1', { orderNumber: '1001-A' })).resolves.toMatchObject({
       id: 'order_1',
-      customerName: 'Updated Customer'
+      orderNumber: '1001-A'
     });
-    expect(service.update).toHaveBeenCalledWith('company_1', 'order_1', { customerName: 'Updated Customer' });
+    expect(service.update).toHaveBeenCalledWith('company_1', 'order_1', { orderNumber: '1001-A' });
   });
 
-  it('throws when updating a missing order', () => {
-    service.update.mockReturnValueOnce(null);
+  it('throws when updating a missing order', async () => {
+    service.update.mockResolvedValueOnce(null);
 
-    expect(() => controller.updateOrder(request, 'missing', { customerName: 'Updated Customer' })).toThrow(NotFoundException);
+    await expect(controller.updateOrder(request, 'missing', { orderNumber: '1001-A' })).rejects.toThrow(NotFoundException);
   });
 });

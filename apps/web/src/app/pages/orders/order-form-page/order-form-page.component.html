@@ -3,122 +3,199 @@
     {{ errorMessage }}
   </p>
 
-  <section class="orders-app__panel orders-app__panel--form">
-    <form class="orders-app__form" [formGroup]="orderForm" (ngSubmit)="saveOrder()">
-      <section class="orders-app__form-section orders-app__form-section--full" aria-label="Dados principais">
+  <section class="orders-app__panel order-form">
+    <div class="orders-app__panel-header">
+      <div>
+        <p class="orders-app__section-label">Pedido operacional</p>
+        <h2 class="orders-app__section-title">{{ editingOrderId ? 'Editar pedido' : 'Novo pedido' }}</h2>
+        <p class="orders-app__section-description">
+          Informe cliente, itens, quantidades e etapas de produção do pedido.
+        </p>
+      </div>
+      <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos">
+        Voltar
+      </a>
+    </div>
+
+    <div class="orders-app__loading" *ngIf="isLoading">Carregando dados do pedido...</div>
+
+    <form class="orders-app__form" [formGroup]="orderForm" (ngSubmit)="saveOrder()" *ngIf="!isLoading">
+      <section class="orders-app__form-section" aria-label="Dados do pedido">
         <div class="orders-app__form-section-header">
-          <h2 class="orders-app__section-title">Dados principais</h2>
+          <h3 class="order-form__section-heading">Dados do pedido</h3>
         </div>
 
         <div class="orders-app__form-grid">
-          <label class="orders-app__field">
+          <div class="orders-app__field">
             <span class="orders-app__field-label">Cliente</span>
-            <input
-              class="orders-app__field-control"
-              [class.orders-app__field-control--invalid]="orderForm.controls.customerName.touched && orderForm.controls.customerName.invalid"
-              type="text"
-              formControlName="customerName"
-              placeholder="Nome do cliente"
-            />
-            <app-form-field-error [control]="orderForm.controls.customerName"></app-form-field-error>
-          </label>
+            <div class="order-form__field-with-action">
+              <app-searchable-select
+                formControlName="customerId"
+                ariaLabel="Cliente"
+                placeholder="Selecione o cliente"
+                searchPlaceholder="Filtrar clientes"
+                [options]="customerOptions"
+              />
+              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="openCustomerDrawer()">
+                Novo
+              </button>
+            </div>
+            <app-form-field-error [control]="orderForm.controls.customerId"></app-form-field-error>
+          </div>
 
           <label class="orders-app__field">
             <span class="orders-app__field-label">Código do pedido</span>
-            <input
-              class="orders-app__field-control"
-              [class.orders-app__field-control--invalid]="orderForm.controls.orderNumber.touched && orderForm.controls.orderNumber.invalid"
-              type="text"
-              formControlName="orderNumber"
-              placeholder="Ex.: PED-2410"
-            />
+            <input class="orders-app__field-control" type="text" formControlName="orderNumber" placeholder="Ex.: PED-2410" />
             <app-form-field-error [control]="orderForm.controls.orderNumber"></app-form-field-error>
           </label>
 
           <label class="orders-app__field">
             <span class="orders-app__field-label">Início</span>
-            <input
-              class="orders-app__field-control"
-              [class.orders-app__field-control--invalid]="orderForm.controls.startDate.touched && orderForm.controls.startDate.invalid"
-              type="date"
-              formControlName="startDate"
-            />
-            <app-form-field-error [control]="orderForm.controls.startDate"></app-form-field-error>
+            <input class="orders-app__field-control" type="date" formControlName="startDate" />
           </label>
 
           <label class="orders-app__field">
-            <span class="orders-app__field-label">Entrega</span>
-            <input
-              class="orders-app__field-control"
-              [class.orders-app__field-control--invalid]="orderForm.controls.deliveryDate.touched && orderForm.controls.deliveryDate.invalid"
-              type="date"
-              formControlName="deliveryDate"
-            />
-            <app-form-field-error [control]="orderForm.controls.deliveryDate"></app-form-field-error>
+            <span class="orders-app__field-label">Entrega prometida</span>
+            <input class="orders-app__field-control" type="date" formControlName="deliveryDate" />
           </label>
         </div>
       </section>
 
-      <section class="orders-app__form-section orders-app__form-section--full" formArrayName="products" aria-label="Itens do pedido">
+      <section class="orders-app__form-section" formArrayName="items" aria-label="Itens do pedido">
         <div class="orders-app__form-section-header">
           <div>
-            <h2 class="orders-app__section-title">Itens do pedido</h2>
+            <h3 class="order-form__section-heading">Itens do pedido</h3>
+            <p class="orders-app__field-help">Cada item pode usar quantidade única ou grade de tamanhos.</p>
           </div>
-          <button type="button" class="orders-app__button orders-app__button--secondary" (click)="addProduct()">
+          <button type="button" class="orders-app__button orders-app__button--secondary" (click)="addItem()">
             Adicionar item
           </button>
         </div>
 
-        <div class="orders-app__product-list">
-          <div
-            class="orders-app__product-row"
-            *ngFor="let product of getProductControls(); let index = index"
-            [formGroupName]="index"
-          >
-            <label class="orders-app__field">
-              <span class="orders-app__field-label">Item</span>
-              <input
-                class="orders-app__field-control"
-                [class.orders-app__field-control--invalid]="product.controls.name.touched && product.controls.name.invalid"
-                type="text"
-                formControlName="name"
-                placeholder="Produto ou serviço"
-              />
-              <app-form-field-error [control]="product.controls.name"></app-form-field-error>
-            </label>
-
-            <label class="orders-app__field">
-              <span class="orders-app__field-label">Quantidade</span>
-              <input
-                class="orders-app__field-control"
-                [class.orders-app__field-control--invalid]="product.controls.quantity.touched && product.controls.quantity.invalid"
-                type="number"
-                min="0.01"
-                step="0.01"
-                formControlName="quantity"
-              />
-              <app-form-field-error [control]="product.controls.quantity"></app-form-field-error>
-            </label>
-
-            <button
-              type="button"
-              class="orders-app__button orders-app__button--secondary orders-app__button--row"
-              (click)="removeProduct(index)"
-            >
+        <article class="order-form__item" *ngFor="let item of itemControls.controls; let itemIndex = index" [formGroupName]="itemIndex">
+          <div class="order-form__item-header">
+            <div>
+              <strong>Item {{ itemIndex + 1 }}</strong>
+              <span>{{ getProductName(item.get('productId')?.value) }} · Total {{ getItemTotal(itemIndex) }}</span>
+            </div>
+            <button type="button" class="orders-app__button orders-app__button--secondary" (click)="removeItem(itemIndex)">
               Remover
             </button>
           </div>
-        </div>
+
+          <div class="orders-app__form-grid">
+            <div class="orders-app__field">
+              <span class="orders-app__field-label">Produto</span>
+              <div class="order-form__field-with-action">
+                <app-searchable-select
+                  formControlName="productId"
+                  [ariaLabel]="'Produto item ' + (itemIndex + 1)"
+                  placeholder="Selecione o produto"
+                  searchPlaceholder="Filtrar produtos"
+                  [options]="productOptions"
+                />
+                <button type="button" class="orders-app__button orders-app__button--secondary" (click)="openProductDrawer(itemIndex)">
+                  Novo
+                </button>
+              </div>
+            </div>
+
+            <div class="orders-app__field">
+              <span class="orders-app__field-label">Modo de quantidade</span>
+              <div class="order-form__segmented">
+                <button
+                  type="button"
+                  [class.order-form__segmented-button--active]="item.get('quantityMode')?.value === 'SINGLE'"
+                  class="order-form__segmented-button"
+                  (click)="setQuantityMode(itemIndex, 'SINGLE')"
+                >
+                  Quantidade única
+                </button>
+                <button
+                  type="button"
+                  [class.order-form__segmented-button--active]="item.get('quantityMode')?.value === 'SIZE_GRID'"
+                  class="order-form__segmented-button"
+                  (click)="setQuantityMode(itemIndex, 'SIZE_GRID')"
+                >
+                  Grade de tamanhos
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <label class="orders-app__field" *ngIf="item.get('quantityMode')?.value === 'SINGLE'">
+            <span class="orders-app__field-label">Quantidade</span>
+            <input class="orders-app__field-control" type="number" min="0.01" step="0.01" formControlName="quantity" />
+          </label>
+
+          <div class="order-form__size-grid" *ngIf="item.get('quantityMode')?.value === 'SIZE_GRID'" formArrayName="sizes">
+            <label class="orders-app__field" *ngFor="let size of getSizeControls(itemIndex).controls; let sizeIndex = index" [formGroupName]="sizeIndex">
+              <span class="orders-app__field-label">{{ getSizeName(size.get('sizeId')?.value) }}</span>
+              <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="quantity" />
+            </label>
+          </div>
+
+          <div class="order-form__template-block">
+            <div class="orders-app__field">
+              <span class="orders-app__field-label">Template de produção</span>
+              <app-searchable-select
+                formControlName="templateId"
+                [ariaLabel]="'Template item ' + (itemIndex + 1)"
+                placeholder="Começar do zero"
+                searchPlaceholder="Filtrar templates"
+                [options]="templateOptions"
+              />
+              <small class="orders-app__field-help">Aplicar template copia as etapas para este item sem alterar o cadastro original.</small>
+            </div>
+            <div class="order-form__template-actions">
+              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="applyTemplate(itemIndex)">
+                Aplicar template
+              </button>
+              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="startWithoutTemplate(itemIndex)">
+                Começar do zero
+              </button>
+            </div>
+          </div>
+
+          <div class="order-form__stages" formArrayName="stages">
+            <div class="order-form__stages-header">
+              <strong>Etapas do item</strong>
+              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="addStage(itemIndex)">
+                Adicionar etapa
+              </button>
+            </div>
+
+            <div class="order-form__stage-row" *ngFor="let stage of getStageControls(itemIndex).controls; let stageIndex = index" [formGroupName]="stageIndex">
+              <div class="orders-app__field">
+                <span class="orders-app__field-label">Etapa {{ stageIndex + 1 }}</span>
+                <app-searchable-select
+                  formControlName="stageId"
+                  [ariaLabel]="'Etapa ' + (stageIndex + 1) + ' item ' + (itemIndex + 1)"
+                  placeholder="Selecione a etapa"
+                  searchPlaceholder="Filtrar etapas"
+                  [options]="stageOptions"
+                />
+              </div>
+              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="removeStage(itemIndex, stageIndex)">
+                Remover
+              </button>
+            </div>
+
+            <p class="orders-app__field-help" *ngIf="getStageControls(itemIndex).length === 0">
+              Nenhuma etapa definida para este item.
+            </p>
+          </div>
+
+          <label class="orders-app__field">
+            <span class="orders-app__field-label">Observações do item</span>
+            <textarea class="orders-app__field-control orders-app__field-control--textarea" rows="3" formControlName="notes"></textarea>
+          </label>
+        </article>
       </section>
 
       <label class="orders-app__field orders-app__field--full">
         <span class="orders-app__field-label">Observações finais</span>
-        <textarea
-          class="orders-app__field-control orders-app__field-control--textarea"
-          formControlName="finalNotes"
-          placeholder="Opcional"
-          rows="4"
-        ></textarea>
+        <textarea class="orders-app__field-control orders-app__field-control--textarea" formControlName="finalNotes" rows="4"></textarea>
         <small class="orders-app__field-help">Opcional. Use para informar detalhes finais do pedido.</small>
       </label>
 
@@ -129,6 +206,48 @@
         <button type="submit" class="orders-app__button" [disabled]="isSaving">
           {{ isSaving ? 'Salvando...' : 'Salvar pedido' }}
         </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="order-form__drawer" *ngIf="isCustomerDrawerOpen">
+    <div class="order-form__drawer-backdrop" (click)="closeQuickDrawers()"></div>
+    <form class="order-form__drawer-panel" [formGroup]="quickCustomerForm" (ngSubmit)="createQuickCustomer()">
+      <h2>Novo cliente</h2>
+      <label class="orders-app__field">
+        <span class="orders-app__field-label">Nome completo</span>
+        <input class="orders-app__field-control" type="text" formControlName="name" />
+      </label>
+      <label class="orders-app__field">
+        <span class="orders-app__field-label">Celular opcional</span>
+        <input class="orders-app__field-control" type="text" formControlName="mobilePhone" />
+      </label>
+      <div class="orders-app__actions">
+        <button type="button" class="orders-app__button orders-app__button--secondary" (click)="closeQuickDrawers()">Cancelar</button>
+        <button type="submit" class="orders-app__button">Cadastrar cliente</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="order-form__drawer" *ngIf="isProductDrawerOpen">
+    <div class="order-form__drawer-backdrop" (click)="closeQuickDrawers()"></div>
+    <form class="order-form__drawer-panel" [formGroup]="quickProductForm" (ngSubmit)="createQuickProduct()">
+      <h2>Novo produto</h2>
+      <label class="orders-app__field">
+        <span class="orders-app__field-label">Nome</span>
+        <input class="orders-app__field-control" type="text" formControlName="name" />
+      </label>
+      <label class="orders-app__field">
+        <span class="orders-app__field-label">Custo do produto</span>
+        <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="costPrice" />
+      </label>
+      <label class="orders-app__field">
+        <span class="orders-app__field-label">Preço de venda</span>
+        <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="salePrice" />
+      </label>
+      <div class="orders-app__actions">
+        <button type="button" class="orders-app__button orders-app__button--secondary" (click)="closeQuickDrawers()">Cancelar</button>
+        <button type="submit" class="orders-app__button">Cadastrar produto</button>
       </div>
     </form>
   </section>

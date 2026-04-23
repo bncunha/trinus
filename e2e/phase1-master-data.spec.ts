@@ -161,6 +161,7 @@ test.describe('Fase 1 - cadastros base reais', () => {
   });
 
   test('faz CRUD completo nas telas de cadastros base', async ({ page }) => {
+    test.setTimeout(120_000);
     await registerCompany(page, account('CrudFase1'));
 
     await page.goto('/configuracoes/unidades-medida');

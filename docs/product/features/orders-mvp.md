@@ -1,5 +1,23 @@
 # Feature: Controle de Pedidos MVP
 
+## Status
+
+Fase 2 implementada para pedido operacional inicial.
+
+Entregue com banco real:
+
+- Pedido persistido por empresa.
+- Item de pedido com produto real.
+- Cliente real vinculado ao pedido.
+- Quantidade unica por item.
+- Grade de tamanhos por item.
+- Template de producao aplicado por item.
+- Etapas copiadas para o item do pedido, permitindo edicao sem alterar o template original.
+- Cadastro rapido de cliente dentro do pedido.
+- Cadastro rapido de produto dentro do pedido.
+- Lista de pedidos conectada ao backend real.
+- Isolamento multiempresa para pedidos.
+
 ## Objetivo
 
 Permitir que Gestores criem pedidos, configurem os itens de producao e recebam apoio do sistema para prazo, risco, criticidade e gargalos.
@@ -48,7 +66,7 @@ Permitir que Gestores criem pedidos, configurem os itens de producao e recebam a
 - Quantidades devem ser positivas e aceitar ate 2 casas decimais.
 - Se nenhum tamanho for informado, a quantidade fica vinculada ao item.
 - Template de producao substitui o conceito de tipo de pedido.
-- Template aplicado ao pedido pode ser alterado sem alterar o template original.
+- Template aplicado ao item do pedido pode ser alterado sem alterar o template original.
 - O usuario pode comecar a producao do item do zero ou usar um template existente.
 - Quando usar template, o sistema preenche as etapas e permite edicao parcial.
 - Criticidade ordena a fila e aparece no dashboard.
@@ -97,6 +115,16 @@ Permitir que Gestores criem pedidos, configurem os itens de producao e recebam a
 - Formulas avancadas de variaveis.
 - Calendario complexo com feriados, excecoes e turnos customizados.
 - Permissoes completas por papel.
+
+## Fora do Escopo da Fase 2
+
+- Calculo de prazo.
+- Risco de atraso real.
+- Fila inteligente.
+- Criticidade manual.
+- Impedimentos por etapa.
+- Variaveis do pedido sobrescrevendo defaults do produto.
+- Dashboard operacional completo.
 
 ## Criterios de Aceite
 
