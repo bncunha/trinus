@@ -1,4 +1,4 @@
-<section class="orders-app__view" *ngIf="orders$ | async as orders">
+<section class="orders-app__view" *ngIf="viewModel$ | async as viewModel">
   <section class="orders-app__panel">
     <div class="orders-app__panel-header">
       <div>
@@ -16,12 +16,73 @@
       </div>
     </div>
 
-    <div class="orders-app__empty" *ngIf="orders.length === 0">
+    <form class="orders-list__filters" [formGroup]="filterForm" aria-label="Filtros de pedidos">
+      <label class="orders-list__filter orders-list__filter--search">
+        <span>Buscar por pedido, cliente ou produto</span>
+        <input class="orders-app__field-control" type="search" formControlName="search" placeholder="Ex.: PED-1020, Maria, Camiseta" />
+      </label>
+
+      <label class="orders-list__filter">
+        <span>Ordenar por</span>
+        <select class="orders-app__field-control" formControlName="sort">
+          <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <label class="orders-list__filter">
+        <span>Situação</span>
+        <select class="orders-app__field-control" formControlName="status">
+          <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <label class="orders-list__filter">
+        <span>Risco de atraso</span>
+        <select class="orders-app__field-control" formControlName="risk">
+          <option *ngFor="let option of riskOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <label class="orders-list__filter">
+        <span>Entrega</span>
+        <select class="orders-app__field-control" formControlName="deliveryWindow">
+          <option *ngFor="let option of deliveryWindowOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <ng-container *ngIf="filterForm.controls.deliveryWindow.value === 'CUSTOM'">
+        <label class="orders-list__filter">
+          <span>Entrega de</span>
+          <input class="orders-app__field-control" type="date" formControlName="deliveryFrom" />
+        </label>
+
+        <label class="orders-list__filter">
+          <span>Entrega até</span>
+          <input class="orders-app__field-control" type="date" formControlName="deliveryTo" />
+        </label>
+      </ng-container>
+
+      <button type="button" class="orders-app__button orders-app__button--secondary orders-list__clear" *ngIf="viewModel.hasActiveFilters" (click)="clearFilters()">
+        Limpar filtros
+      </button>
+
+      <p class="orders-list__summary" aria-live="polite">{{ viewModel.resultSummary }}</p>
+    </form>
+
+    <div class="orders-app__empty" *ngIf="viewModel.totalCount === 0">
       Sem pedidos ainda.
     </div>
 
-    <ul class="orders-app__list" *ngIf="orders.length > 0">
-      <li class="orders-app__item" *ngFor="let order of orders; trackBy: trackByOrderId">
+    <div class="orders-app__empty" *ngIf="viewModel.totalCount > 0 && viewModel.orders.length === 0">
+      Nenhum pedido encontrado. Ajuste os filtros ou limpe a busca.
+    </div>
+
+    <ul class="orders-app__list" *ngIf="viewModel.orders.length > 0">
+      <li
+        class="orders-app__item orders-list__item"
+        [class.orders-list__item--attention]="order.riskLevel === 'HIGH' || order.riskLevel === 'CRITICAL'"
+        *ngFor="let order of viewModel.orders; trackBy: trackByOrderId"
+      >
         <div class="orders-app__item-main">
           <strong class="orders-app__item-reference">Pedido {{ order.orderNumber }}</strong>
           <span class="orders-app__item-customer">{{ order.customerName }}</span>
@@ -29,7 +90,38 @@
 
         <div class="orders-app__item-column">
           <span class="orders-app__item-label">Situação</span>
-          <span class="orders-app__item-status">{{ getStatusLabel(order.status) }}</span>
+
+          <div class="orders-list__status-menu">
+            <button
+              type="button"
+              class="orders-status-badge orders-list__status-trigger"
+              [class.orders-list__status-trigger--busy]="isUpdatingStatus(order.id)"
+              [ngClass]="getStatusBadgeClass(order.status)"
+              [attr.aria-expanded]="isStatusMenuOpen(order.id)"
+              [disabled]="isUpdatingStatus(order.id)"
+              (click)="toggleStatusMenu(order.id)"
+            >
+              <span>{{ getStatusLabel(order.status) }}</span>
+              <span class="material-symbols-rounded" aria-hidden="true">
+                {{ isUpdatingStatus(order.id) ? 'progress_activity' : 'expand_more' }}
+              </span>
+            </button>
+
+            <div class="orders-list__status-dropdown" *ngIf="isStatusMenuOpen(order.id)">
+              <button
+                type="button"
+                class="orders-list__status-option"
+                *ngFor="let option of getStatusActionOptions(order.status)"
+                (click)="updateStatus(order, option.value)"
+              >
+                {{ option.actionLabel }}
+              </button>
+
+              <p class="orders-list__status-empty" *ngIf="getStatusActionOptions(order.status).length === 0">
+                Sem novas transições para este pedido.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div class="orders-app__item-column">
@@ -38,8 +130,25 @@
         </div>
 
         <div class="orders-app__item-column">
-          <span class="orders-app__item-label">Risco</span>
-          <strong>{{ getRiskLabel(order.riskLevel) }}</strong>
+          <span class="orders-app__item-label orders-list__risk-label">
+            <span>Risco de atraso</span>
+            <button
+              type="button"
+              class="orders-list__help-button"
+              aria-label="Entender risco de atraso"
+              (click)="openRiskHelp()"
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">help</span>
+            </button>
+          </span>
+          <span
+            class="orders-risk-badge"
+            [ngClass]="getRiskBadgeClass(order.riskLevel)"
+            [attr.aria-label]="'Risco de atraso: ' + getRiskLabel(order.riskLevel)"
+          >
+            {{ getRiskLabel(order.riskLevel) }}
+          </span>
+          <small class="orders-list__risk-description">{{ getRiskDescription(order.riskLevel) }}</small>
         </div>
 
         <a class="orders-app__button orders-app__button--secondary orders-app__button-link" [routerLink]="['/pedidos/formulario', order.id]">
@@ -48,4 +157,43 @@
       </li>
     </ul>
   </section>
+</section>
+
+<section class="orders-list__help-modal" *ngIf="isRiskHelpOpen">
+  <div class="orders-list__help-backdrop" (click)="closeRiskHelp()"></div>
+  <article
+    class="orders-list__help-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="orders-risk-help-title"
+    aria-describedby="orders-risk-help-description"
+  >
+    <div class="orders-list__help-header">
+      <div>
+        <p class="orders-app__section-label">Ajuda</p>
+        <h3 id="orders-risk-help-title">Risco de atraso</h3>
+      </div>
+      <button
+        type="button"
+        class="orders-list__help-close"
+        aria-label="Fechar explicação de risco"
+        (click)="closeRiskHelp()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">close</span>
+      </button>
+    </div>
+
+    <p id="orders-risk-help-description" class="orders-list__help-description">
+      Mostra a chance de perder o prazo prometido. Risco e criticidade são coisas diferentes.
+    </p>
+
+    <ul class="orders-list__help-list">
+      <li><span class="orders-risk-badge orders-risk-badge--low">Baixo</span><span>Sem sinal relevante de atraso.</span></li>
+      <li><span class="orders-risk-badge orders-risk-badge--medium">Médio</span><span>Atenção, monitorar o pedido.</span></li>
+      <li><span class="orders-risk-badge orders-risk-badge--high">Alto</span><span>Risco relevante de atraso.</span></li>
+      <li><span class="orders-risk-badge orders-risk-badge--critical">Crítico</span><span>Atraso muito provável ou iminente.</span></li>
+    </ul>
+
+    <small>Na Fase 2 este risco é preliminar; o cálculo operacional completo entra na Fase 3.</small>
+  </article>
 </section>

@@ -17,6 +17,7 @@ Entregue com banco real:
 - Cadastro rapido de produto dentro do pedido.
 - Lista de pedidos conectada ao backend real.
 - Isolamento multiempresa para pedidos.
+- Evolucao operacional de status na lista e na edicao do pedido.
 
 ## Objetivo
 
@@ -71,6 +72,22 @@ Permitir que Gestores criem pedidos, configurem os itens de producao e recebam a
 - Quando usar template, o sistema preenche as etapas e permite edicao parcial.
 - Criticidade ordena a fila e aparece no dashboard.
 - Risco de atraso e criticidade sao conceitos diferentes.
+- O usuario pode evoluir o pedido diretamente pela lista ou pela tela de edicao.
+- Transicoes permitidas nesta fase:
+  - REGISTERED -> IN_PROGRESS
+  - REGISTERED -> CANCELED
+  - IN_PROGRESS -> PAUSED
+  - IN_PROGRESS -> FINISHED
+  - PAUSED -> IN_PROGRESS
+  - PAUSED -> CANCELED
+- Transicoes bloqueadas:
+  - qualquer saida de FINISHED
+  - qualquer saida de CANCELED
+  - REGISTERED -> FINISHED
+  - REGISTERED -> PAUSED
+  - IN_PROGRESS -> REGISTERED
+  - PAUSED -> REGISTERED
+- Cancelar e finalizar pedido exigem confirmacao explicita do usuario.
 - Impedimento pertence a uma etapa do pedido, mas o pedido deve sinalizar quando possui impedimento.
 - Impedimento exige motivo obrigatorio.
 

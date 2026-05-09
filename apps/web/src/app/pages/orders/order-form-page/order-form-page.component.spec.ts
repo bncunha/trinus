@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import type { CreateOrderInput, Order } from '@trinus/contracts';
+import type { CreateOrderInput, Order, OrderStatus } from '@trinus/contracts';
 import { of, throwError } from 'rxjs';
 import { MasterDataService } from '../../../services-api/master-data.service';
 import { OrdersService } from '../../../services-api/orders.service';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog.service';
 import { ToastService } from '../../../shared/toast.service';
 import { OrderFormPageComponent } from './order-form-page.component';
 
@@ -41,6 +42,7 @@ class OrdersServiceStub {
   getOrder = jest.fn(() => of(order));
   createOrder = jest.fn((request: CreateOrderInput) => of({ ...order, ...request, id: 'ORD-2002' }));
   updateOrder = jest.fn((_: string, request: Partial<CreateOrderInput>) => of({ ...order, ...request }));
+  updateOrderStatus = jest.fn((_: string, status: OrderStatus) => of({ ...order, status }));
 }
 
 class MasterDataServiceStub {
@@ -55,14 +57,29 @@ class MasterDataServiceStub {
 
 class ToastServiceStub {
   success = jest.fn();
+  warning = jest.fn();
+  danger = jest.fn();
+}
+
+class ConfirmDialogServiceStub {
+  open = jest.fn((config: { onConfirm?: () => void }) => config.onConfirm?.());
 }
 
 describe('OrderFormPageComponent', () => {
   let fixture: ComponentFixture<OrderFormPageComponent>;
   let ordersService: OrdersServiceStub;
   let router: Router;
+  let currentRouteId: string | null;
+
+  async function createComponent(): Promise<void> {
+    fixture = TestBed.createComponent(OrderFormPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  }
 
   beforeEach(async () => {
+    currentRouteId = null;
     ordersService = new OrdersServiceStub();
 
     await TestBed.configureTestingModule({
@@ -72,21 +89,18 @@ describe('OrderFormPageComponent', () => {
         { provide: OrdersService, useValue: ordersService },
         { provide: MasterDataService, useClass: MasterDataServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } }
+        { provide: ConfirmDialogService, useClass: ConfirmDialogServiceStub },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => currentRouteId } } } }
       ]
     }).compileComponents();
 
     router = TestBed.inject(Router);
     jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
-    fixture = TestBed.createComponent(OrderFormPageComponent);
-    fixture.detectChanges();
   });
 
-  it('salva pedido com cliente, produto e quantidade única', () => {
-    const component = fixture.componentInstance as unknown as {
-      orderForm: typeof fixture.componentInstance extends never ? never : any;
-      saveOrder: () => void;
-    };
+  it('salva pedido com cliente, produto e quantidade única', async () => {
+    await createComponent();
+    const component = fixture.componentInstance as unknown as { orderForm: any; saveOrder: () => void };
 
     component.orderForm.patchValue({
       customerId: 'customer_1',
@@ -107,31 +121,47 @@ describe('OrderFormPageComponent', () => {
       expect.objectContaining({
         customerId: 'customer_1',
         orderNumber: 'PED-2040',
+        status: 'REGISTERED',
         items: [expect.objectContaining({ productId: 'product_1', quantity: 80.25, quantityMode: 'SINGLE' })]
       })
     );
     expect(TestBed.inject(ToastService).success).toHaveBeenCalledWith('Pedido salvo', 'Pedido salvo com sucesso.');
   });
 
-  it('rejeita item sem quantidade válida antes de chamar API', () => {
-    const component = fixture.componentInstance as unknown as { orderForm: any; saveOrder: () => void; errorMessage: string };
+  it('rejeita item sem quantidade válida antes de chamar API', async () => {
+    await createComponent();
+    const component = fixture.componentInstance as unknown as { orderForm: any; saveOrder: () => void };
 
     component.orderForm.patchValue({ customerId: 'customer_1', orderNumber: 'PED-2040' });
-    component.orderForm.controls.items.at(0).patchValue({ productId: 'product_1', quantityMode: 'SINGLE', quantity: 0 });
+    component.orderForm.controls.items.at(0).patchValue({ productId: 'product_1', quantity: 0 });
     component.saveOrder();
 
     expect(ordersService.createOrder).not.toHaveBeenCalled();
-    expect(component.errorMessage).toContain('Corrija os campos destacados');
+    expect(TestBed.inject(ToastService).warning).toHaveBeenCalledWith('Corrija os campos', 'Corrija os campos destacados antes de salvar.');
   });
 
-  it('exibe erro quando a API falha', () => {
+  it('exibe erro quando a API falha', async () => {
+    await createComponent();
     ordersService.createOrder.mockReturnValueOnce(throwError(() => new Error('api indisponível')));
-    const component = fixture.componentInstance as unknown as { orderForm: any; saveOrder: () => void; errorMessage: string };
+    const component = fixture.componentInstance as unknown as { orderForm: any; saveOrder: () => void };
 
     component.orderForm.patchValue({ customerId: 'customer_1', orderNumber: 'PED-2040' });
-    component.orderForm.controls.items.at(0).patchValue({ productId: 'product_1', quantityMode: 'SINGLE', quantity: 12 });
+    component.orderForm.controls.items.at(0).patchValue({ productId: 'product_1', quantity: 12 });
     component.saveOrder();
 
-    expect(component.errorMessage).toContain('Não foi possível salvar o pedido.');
+    expect(TestBed.inject(ToastService).danger).toHaveBeenCalledWith('Erro ao salvar pedido', 'Não foi possível salvar o pedido.');
+  });
+
+  it('atualiza o status direto pela tela de edição', async () => {
+    currentRouteId = 'ORD-2001';
+    await createComponent();
+
+    const component = fixture.componentInstance as unknown as { requestStatusChange: (status: OrderStatus) => void; currentStatus: OrderStatus };
+    component.requestStatusChange('IN_PROGRESS');
+    fixture.detectChanges();
+
+    expect(ordersService.updateOrderStatus).toHaveBeenCalledWith('ORD-2001', 'IN_PROGRESS');
+    expect(component.currentStatus).toBe('IN_PROGRESS');
+    expect(TestBed.inject(ToastService).success).toHaveBeenCalledWith('Status atualizado', 'Marcar como em andamento.');
   });
 });

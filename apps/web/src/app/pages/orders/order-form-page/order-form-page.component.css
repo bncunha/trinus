@@ -7,6 +7,65 @@
   font-size: 1.05rem;
 }
 
+.order-form__status-section {
+  display: grid;
+  gap: 14px;
+}
+
+.order-form__status-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-form__status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.orders-status-badge {
+  width: fit-content;
+  padding: 4px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.orders-status-badge--registered {
+  border-color: rgba(77, 101, 134, 0.26);
+  background: rgba(77, 101, 134, 0.1);
+  color: #37516f;
+}
+
+.orders-status-badge--in_progress {
+  border-color: rgba(143, 112, 19, 0.32);
+  background: rgba(245, 223, 101, 0.32);
+  color: #6f5510;
+}
+
+.orders-status-badge--paused {
+  border-color: rgba(90, 94, 116, 0.28);
+  background: rgba(90, 94, 116, 0.12);
+  color: #42475b;
+}
+
+.orders-status-badge--canceled {
+  border-color: rgba(184, 63, 57, 0.34);
+  background: rgba(184, 63, 57, 0.14);
+  color: var(--color-danger);
+}
+
+.orders-status-badge--finished {
+  border-color: rgba(31, 122, 91, 0.28);
+  background: rgba(31, 122, 91, 0.1);
+  color: #176044;
+}
+
 .order-form__field-with-action {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -41,33 +100,21 @@
   color: var(--color-muted);
 }
 
-.order-form__segmented {
+.order-form__sizes-manager {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.order-form__segmented-button {
-  min-height: 46px;
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.order-form__segmented-button--active {
-  border-color: var(--color-primary);
-  background: rgba(31, 122, 91, 0.1);
-  color: var(--color-primary);
-  font-weight: 700;
+  gap: 10px;
 }
 
 .order-form__size-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(110px, 1fr));
   gap: 12px;
+}
+
+.order-form__size-grid-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
 }
 
 .order-form__template-block {
@@ -81,6 +128,12 @@
   justify-content: flex-end;
 }
 
+.order-form__reset-button {
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0;
+}
+
 .order-form__stages {
   display: grid;
   gap: 12px;
@@ -91,6 +144,24 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: end;
+}
+
+.order-form__stage-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.order-form__icon-button {
+  min-width: 42px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.order-form__icon-button--danger {
+  background: #ce3e3e;
 }
 
 .order-form__drawer {
@@ -124,13 +195,19 @@
 }
 
 @media (max-width: 760px) {
+  .order-form__status-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .order-form__field-with-action,
   .order-form__template-block,
   .order-form__stage-row,
-  .order-form__size-grid {
+  .order-form__size-grid-row {
     grid-template-columns: 1fr;
   }
 
+  .order-form__status-actions,
   .order-form__item-header,
   .order-form__stages-header,
   .order-form__template-actions {

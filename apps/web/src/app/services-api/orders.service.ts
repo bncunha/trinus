@@ -31,6 +31,10 @@ export class OrdersService {
     return this.http.patch<Order>(`${ordersApiUrl()}/${id}`, request, { withCredentials: true }).pipe(map((order) => this.persistOrder(order)));
   }
 
+  updateOrderStatus(id: string, status: OrderStatus): Observable<Order> {
+    return this.updateOrder(id, { status });
+  }
+
   resetOrders(): void {
     this.ordersSubject.next([]);
   }

@@ -12,7 +12,19 @@ const orderRecord = {
   finalNotes: 'Separar por tamanho.',
   createdAt: new Date('2026-04-01T00:00:00'),
   updatedAt: new Date('2026-04-01T00:00:00'),
-  customer: { id: 'customer_1', companyId: 'company_1', name: 'Alpha Uniforms', cpf: null, cnpj: null, address: null, mobilePhone: null, landlinePhone: null, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  customer: {
+    id: 'customer_1',
+    companyId: 'company_1',
+    name: 'Alpha Uniforms',
+    cpf: null,
+    cnpj: null,
+    address: null,
+    mobilePhone: null,
+    landlinePhone: null,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
   items: [
     {
       id: 'item_1',
@@ -23,7 +35,16 @@ const orderRecord = {
       quantityMode: 'SINGLE',
       quantity: 120,
       notes: null,
-      product: { id: 'product_1', companyId: 'company_1', name: 'Polo shirt', costPrice: 10, salePrice: 20, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      product: {
+        id: 'product_1',
+        companyId: 'company_1',
+        name: 'Polo shirt',
+        costPrice: 10,
+        salePrice: 20,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
       template: null,
       sizes: [],
       stages: []
@@ -32,6 +53,7 @@ const orderRecord = {
 };
 
 describe('OrdersService', () => {
+  let transactionOrderRecord = { ...orderRecord };
   const prisma = {
     order: {
       findMany: jest.fn(),
@@ -59,8 +81,11 @@ describe('OrdersService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    transactionOrderRecord = { ...orderRecord };
     prisma.order.findMany.mockResolvedValue([orderRecord]);
-    prisma.order.findFirst.mockResolvedValue(orderRecord);
+    prisma.order.findFirst.mockImplementation(async (args?: { where?: { id?: string } }) =>
+      args?.where?.id ? orderRecord : null
+    );
     prisma.customer.findFirst.mockResolvedValue({ id: 'customer_1' });
     prisma.product.findFirst.mockResolvedValue({ id: 'product_1' });
     prisma.clothingSize.findMany.mockResolvedValue([{ id: 'size_p' }]);
@@ -69,9 +94,26 @@ describe('OrdersService', () => {
     prisma.$transaction.mockImplementation(async (callback) =>
       callback({
         order: {
-          create: jest.fn().mockResolvedValue({ id: 'order_2' }),
-          update: jest.fn().mockResolvedValue({ id: 'order_1' }),
-          findFirst: jest.fn().mockResolvedValue({ ...orderRecord, id: 'order_2', orderNumber: '1002' })
+          create: jest.fn().mockImplementation(async ({ data }) => {
+            transactionOrderRecord = {
+              ...orderRecord,
+              id: 'order_2',
+              orderNumber: data.orderNumber,
+              status: data.status ?? 'REGISTERED',
+              customerId: data.customerId
+            };
+            return { id: 'order_2' };
+          }),
+          update: jest.fn().mockImplementation(async ({ data }) => {
+            transactionOrderRecord = {
+              ...transactionOrderRecord,
+              customerId: data.customerId ?? transactionOrderRecord.customerId,
+              status: data.status ?? transactionOrderRecord.status,
+              finalNotes: data.finalNotes ?? transactionOrderRecord.finalNotes
+            };
+            return { id: 'order_1' };
+          }),
+          findFirst: jest.fn().mockImplementation(async () => transactionOrderRecord)
         },
         orderItem: {
           create: jest.fn().mockResolvedValue({ id: 'item_2' }),
@@ -142,5 +184,21 @@ describe('OrdersService', () => {
     prisma.order.findFirst.mockResolvedValueOnce(null);
 
     await expect(service.update('company_1', 'missing', { orderNumber: '1001-A' })).resolves.toBeNull();
+  });
+
+  it('rejects order number change after creation', async () => {
+    await expect(service.update('company_1', 'order_1', { orderNumber: '9999' })).rejects.toThrow(BadRequestException);
+  });
+
+  it('allows a valid status transition', async () => {
+    await expect(service.update('company_1', 'order_1', { status: 'IN_PROGRESS' })).resolves.toMatchObject({
+      id: 'order_1',
+      status: 'IN_PROGRESS'
+    });
+  });
+
+  it('rejects an invalid status transition', async () => {
+    await expect(service.update('company_1', 'order_1', { status: 'FINISHED' })).rejects.toThrow(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });

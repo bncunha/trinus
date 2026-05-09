@@ -5,6 +5,8 @@ import {
   Component,
   ElementRef,
   HostListener,
+  Output,
+  EventEmitter,
   Input,
   ViewChild,
   forwardRef,
@@ -41,6 +43,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   @Input() placeholder = 'Selecione';
   @Input() searchPlaceholder = 'Filtrar opções';
   @Input() ariaLabel = 'Selecionar opção';
+  @Output() valueChange = new EventEmitter<string>();
 
   @ViewChild('searchInput') private searchInput?: ElementRef<HTMLInputElement>;
 
@@ -92,6 +95,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   protected select(option: SearchableSelectOption): void {
     this.value = option.value;
     this.onChange(option.value);
+    this.valueChange.emit(option.value);
     this.close();
     this.changeDetectorRef.markForCheck();
   }

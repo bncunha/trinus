@@ -94,7 +94,6 @@ test.describe('Fase 2 - pedidos operacionais reais', () => {
     await selectSearchableOption(page, 'Produto item 1', `Camiseta UI ${runId}`);
     await page.getByLabel('Quantidade').fill('42');
     await selectSearchableOption(page, 'Template item 1', `Fluxo UI ${runId}`);
-    await page.getByRole('button', { name: 'Aplicar template' }).click();
     await expect(page.getByText(`Cortar UI ${runId}`)).toBeVisible();
     await page.getByRole('button', { name: 'Salvar pedido' }).click();
 
@@ -102,9 +101,15 @@ test.describe('Fase 2 - pedidos operacionais reais', () => {
     await expect(page.getByText(`Pedido PED-${runId}`)).toBeVisible();
     await expect(page.getByText(`Cliente UI ${runId}`)).toBeVisible();
 
+    const createdOrder = page.locator('.orders-app__item', { hasText: `Pedido PED-${runId}` });
+    await createdOrder.getByRole('button', { name: /Registrado/i }).click();
+    await createdOrder.getByRole('button', { name: 'Marcar como em andamento' }).click();
+    await expect(createdOrder.getByRole('button', { name: /Em produção/i })).toBeVisible();
+
     await page.getByRole('link', { name: 'Editar' }).click();
     await expect(page).toHaveURL(/\/pedidos\/formulario\//);
     await expect(page.getByLabel('Quantidade')).toHaveValue('42');
+    await expect(page.getByRole('button', { name: 'Finalizar pedido' })).toBeVisible();
     await page.getByLabel('Quantidade').fill('48');
     await page.getByRole('button', { name: 'Salvar pedido' }).click();
     await expect(page).toHaveURL(/\/pedidos$/);
@@ -116,6 +121,8 @@ test.describe('Fase 2 - pedidos operacionais reais', () => {
     expect(order.items[0].templateId).toBe(seed.template.id);
     expect(order.items[0].stages[0].stageId).toBe(seed.stage.id);
     expect(order.items[0].quantity).toBe(48);
+    expect(order.status).toBe('IN_PROGRESS');
+    expect((await page.request.patch(`${API_URL}/orders/${order.id}`, { data: { status: 'REGISTERED' } })).status()).toBe(400);
   });
 
   test('isola pedidos por empresa no backend real', async () => {

@@ -66,6 +66,26 @@ export interface CreateOrderInput {
 
 export type UpdateOrderInput = Partial<CreateOrderInput>;
 
+export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  REGISTERED: ['IN_PROGRESS', 'CANCELED'],
+  IN_PROGRESS: ['PAUSED', 'FINISHED'],
+  PAUSED: ['IN_PROGRESS', 'CANCELED'],
+  CANCELED: [],
+  FINISHED: []
+};
+
+export function getAllowedNextOrderStatuses(status: OrderStatus): OrderStatus[] {
+  return ORDER_STATUS_TRANSITIONS[status];
+}
+
+export function canTransitionOrderStatus(currentStatus: OrderStatus, nextStatus: OrderStatus): boolean {
+  if (currentStatus === nextStatus) {
+    return true;
+  }
+
+  return ORDER_STATUS_TRANSITIONS[currentStatus].includes(nextStatus);
+}
+
 export interface CreateOrderItemSizeInput {
   sizeId: string;
   quantity: number;

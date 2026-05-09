@@ -1,8 +1,4 @@
 <section class="orders-app__view">
-  <p class="orders-app__message orders-app__message--error" role="alert" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </p>
-
   <section class="orders-app__panel order-form">
     <div class="orders-app__panel-header">
       <div>
@@ -20,6 +16,33 @@
     <div class="orders-app__loading" *ngIf="isLoading">Carregando dados do pedido...</div>
 
     <form class="orders-app__form" [formGroup]="orderForm" (ngSubmit)="saveOrder()" *ngIf="!isLoading">
+      <section class="orders-app__form-section order-form__status-section" aria-label="Status do pedido">
+        <div class="order-form__status-header">
+          <div>
+            <h3 class="order-form__section-heading">Status do pedido</h3>
+            <p class="orders-app__field-help">
+              {{ editingOrderId ? 'Use as ações rápidas para evoluir o pedido sem sair da edição.' : 'Novos pedidos começam como registrados.' }}
+            </p>
+          </div>
+
+          <span class="orders-status-badge" [ngClass]="getStatusBadgeClass(currentStatus)">
+            {{ getStatusLabel(currentStatus) }}
+          </span>
+        </div>
+
+        <div class="order-form__status-actions" *ngIf="editingOrderId && statusActions.length > 0">
+          <button
+            type="button"
+            class="orders-app__button orders-app__button--secondary"
+            *ngFor="let action of statusActions"
+            [disabled]="isStatusSaving"
+            (click)="requestStatusChange(action.value)"
+          >
+            {{ isStatusSaving ? 'Atualizando...' : action.actionLabel }}
+          </button>
+        </div>
+      </section>
+
       <section class="orders-app__form-section" aria-label="Dados do pedido">
         <div class="orders-app__form-section-header">
           <h3 class="order-form__section-heading">Dados do pedido</h3>
@@ -45,7 +68,8 @@
 
           <label class="orders-app__field">
             <span class="orders-app__field-label">Código do pedido</span>
-            <input class="orders-app__field-control" type="text" formControlName="orderNumber" placeholder="Ex.: PED-2410" />
+            <input class="orders-app__field-control" type="text" formControlName="orderNumber" placeholder="Ex.: PED-2410" [readonly]="!!editingOrderId" />
+            <small class="orders-app__field-help" *ngIf="editingOrderId">O código não pode ser alterado após a criação.</small>
             <app-form-field-error [control]="orderForm.controls.orderNumber"></app-form-field-error>
           </label>
 
@@ -65,7 +89,7 @@
         <div class="orders-app__form-section-header">
           <div>
             <h3 class="order-form__section-heading">Itens do pedido</h3>
-            <p class="orders-app__field-help">Cada item pode usar quantidade única ou grade de tamanhos.</p>
+            <p class="orders-app__field-help">Quando houver tamanhos adicionados, o item vira automaticamente grade de tamanhos.</p>
           </div>
           <button type="button" class="orders-app__button orders-app__button--secondary" (click)="addItem()">
             Adicionar item
@@ -102,24 +126,7 @@
 
             <div class="orders-app__field">
               <span class="orders-app__field-label">Modo de quantidade</span>
-              <div class="order-form__segmented">
-                <button
-                  type="button"
-                  [class.order-form__segmented-button--active]="item.get('quantityMode')?.value === 'SINGLE'"
-                  class="order-form__segmented-button"
-                  (click)="setQuantityMode(itemIndex, 'SINGLE')"
-                >
-                  Quantidade única
-                </button>
-                <button
-                  type="button"
-                  [class.order-form__segmented-button--active]="item.get('quantityMode')?.value === 'SIZE_GRID'"
-                  class="order-form__segmented-button"
-                  (click)="setQuantityMode(itemIndex, 'SIZE_GRID')"
-                >
-                  Grade de tamanhos
-                </button>
-              </div>
+              <small class="orders-app__field-help">{{ item.get('quantityMode')?.value === 'SIZE_GRID' ? 'Grade de tamanhos' : 'Quantidade única' }}</small>
             </div>
           </div>
 
@@ -128,11 +135,32 @@
             <input class="orders-app__field-control" type="number" min="0.01" step="0.01" formControlName="quantity" />
           </label>
 
-          <div class="order-form__size-grid" *ngIf="item.get('quantityMode')?.value === 'SIZE_GRID'" formArrayName="sizes">
-            <label class="orders-app__field" *ngFor="let size of getSizeControls(itemIndex).controls; let sizeIndex = index" [formGroupName]="sizeIndex">
-              <span class="orders-app__field-label">{{ getSizeName(size.get('sizeId')?.value) }}</span>
-              <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="quantity" />
-            </label>
+          <div class="order-form__sizes-manager">
+            <div class="orders-app__field">
+              <span class="orders-app__field-label">Adicionar tamanho</span>
+              <div class="order-form__field-with-action">
+                <app-searchable-select
+                  formControlName="selectedSizeToAdd"
+                  [ariaLabel]="'Selecionar tamanho do item ' + (itemIndex + 1)"
+                  placeholder="Selecione um tamanho"
+                  searchPlaceholder="Filtrar tamanhos"
+                  [options]="getAvailableSizeOptions(itemIndex)"
+                />
+                <button type="button" class="orders-app__button orders-app__button--secondary" (click)="addSize(itemIndex, item.get('selectedSizeToAdd')?.value || '')">
+                  Adicionar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-form__size-grid" *ngIf="getSizeControls(itemIndex).length > 0" formArrayName="sizes">
+            <div class="order-form__size-grid-row" *ngFor="let size of getSizeControls(itemIndex).controls; let sizeIndex = index" [formGroupName]="sizeIndex">
+              <label class="orders-app__field">
+                <span class="orders-app__field-label">{{ getSizeName(size.get('sizeId')?.value) }}</span>
+                <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="quantity" />
+              </label>
+              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="removeSize(itemIndex, sizeIndex)">Remover tamanho</button>
+            </div>
           </div>
 
           <div class="order-form__template-block">
@@ -141,18 +169,16 @@
               <app-searchable-select
                 formControlName="templateId"
                 [ariaLabel]="'Template item ' + (itemIndex + 1)"
-                placeholder="Começar do zero"
+                placeholder="Selecione um template"
                 searchPlaceholder="Filtrar templates"
                 [options]="templateOptions"
+                (valueChange)="onTemplateSelected(itemIndex)"
               />
-              <small class="orders-app__field-help">Aplicar template copia as etapas para este item sem alterar o cadastro original.</small>
+              <small class="orders-app__field-help">Ao selecionar um template, as etapas são preenchidas automaticamente.</small>
             </div>
             <div class="order-form__template-actions">
-              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="applyTemplate(itemIndex)">
-                Aplicar template
-              </button>
-              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="startWithoutTemplate(itemIndex)">
-                Começar do zero
+              <button type="button" class="orders-app__button orders-app__button--secondary order-form__reset-button" (click)="resetStages(itemIndex)" aria-label="Resetar etapas do item" title="Resetar etapas">
+                <span class="material-symbols-rounded" aria-hidden="true">restart_alt</span>
               </button>
             </div>
           </div>
@@ -176,9 +202,17 @@
                   [options]="stageOptions"
                 />
               </div>
-              <button type="button" class="orders-app__button orders-app__button--secondary" (click)="removeStage(itemIndex, stageIndex)">
-                Remover
-              </button>
+              <div class="order-form__stage-actions">
+                <button type="button" class="orders-app__button orders-app__button--secondary order-form__icon-button" (click)="moveStageUp(itemIndex, stageIndex)" [disabled]="stageIndex === 0" aria-label="Subir etapa" title="Subir etapa">
+                  <span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span>
+                </button>
+                <button type="button" class="orders-app__button orders-app__button--secondary order-form__icon-button" (click)="moveStageDown(itemIndex, stageIndex)" [disabled]="stageIndex === getStageControls(itemIndex).length - 1" aria-label="Descer etapa" title="Descer etapa">
+                  <span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span>
+                </button>
+                <button type="button" class="orders-app__button order-form__icon-button order-form__icon-button--danger" (click)="removeStage(itemIndex, stageIndex)" aria-label="Remover etapa" title="Remover etapa">
+                  <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                </button>
+              </div>
             </div>
 
             <p class="orders-app__field-help" *ngIf="getStageControls(itemIndex).length === 0">
@@ -203,7 +237,7 @@
         <a class="orders-app__button orders-app__button--secondary orders-app__button-link" routerLink="/pedidos">
           Cancelar
         </a>
-        <button type="submit" class="orders-app__button" [disabled]="isSaving">
+        <button type="submit" class="orders-app__button" [disabled]="isSaving || isStatusSaving">
           {{ isSaving ? 'Salvando...' : 'Salvar pedido' }}
         </button>
       </div>
@@ -217,6 +251,7 @@
       <label class="orders-app__field">
         <span class="orders-app__field-label">Nome completo</span>
         <input class="orders-app__field-control" type="text" formControlName="name" />
+        <app-form-field-error [control]="quickCustomerForm.controls.name"></app-form-field-error>
       </label>
       <label class="orders-app__field">
         <span class="orders-app__field-label">Celular opcional</span>
@@ -236,14 +271,17 @@
       <label class="orders-app__field">
         <span class="orders-app__field-label">Nome</span>
         <input class="orders-app__field-control" type="text" formControlName="name" />
+        <app-form-field-error [control]="quickProductForm.controls.name"></app-form-field-error>
       </label>
       <label class="orders-app__field">
         <span class="orders-app__field-label">Custo do produto</span>
         <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="costPrice" />
+        <app-form-field-error [control]="quickProductForm.controls.costPrice"></app-form-field-error>
       </label>
       <label class="orders-app__field">
         <span class="orders-app__field-label">Preço de venda</span>
         <input class="orders-app__field-control" type="number" min="0" step="0.01" formControlName="salePrice" />
+        <app-form-field-error [control]="quickProductForm.controls.salePrice"></app-form-field-error>
       </label>
       <div class="orders-app__actions">
         <button type="button" class="orders-app__button orders-app__button--secondary" (click)="closeQuickDrawers()">Cancelar</button>

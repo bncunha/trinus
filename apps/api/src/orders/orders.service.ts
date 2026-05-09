@@ -1,5 +1,9 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import {
+  canTransitionOrderStatus,
+  getAllowedNextOrderStatuses
+} from '@trinus/contracts';
 import type {
   CreateOrderInput,
   CreateOrderItemInput,
@@ -51,6 +55,7 @@ export class OrdersService {
 
   async create(companyId: string, input: CreateOrderInput): Promise<Order> {
     this.validateOrderInput(input);
+    await this.validateUniqueOrderNumber(companyId, input.orderNumber);
     await this.validateCustomer(companyId, input.customerId);
     await this.validateItems(companyId, input.items);
 
@@ -86,8 +91,14 @@ export class OrdersService {
       return null;
     }
 
-    if (input.orderNumber !== undefined && !input.orderNumber.trim()) {
-      throw new BadRequestException('Código do pedido é obrigatório.');
+    if (input.orderNumber !== undefined) {
+      if (!input.orderNumber.trim()) {
+        throw new BadRequestException('Código do pedido é obrigatório.');
+      }
+
+      if (input.orderNumber.trim() !== current.orderNumber) {
+        throw new BadRequestException('Código do pedido não pode ser alterado após a criação.');
+      }
     }
 
     if (input.customerId !== undefined) {
@@ -100,6 +111,10 @@ export class OrdersService {
       }
 
       await this.validateItems(companyId, input.items);
+    }
+
+    if (input.status !== undefined) {
+      this.validateStatusTransition(current.status, input.status);
     }
 
     const record = await this.catchUniqueConflict(() =>
@@ -256,6 +271,17 @@ export class OrdersService {
     }
   }
 
+  private async validateUniqueOrderNumber(companyId: string, orderNumber: string): Promise<void> {
+    const duplicate = await this.prisma.order.findFirst({
+      select: { id: true },
+      where: { companyId, orderNumber: orderNumber.trim() }
+    });
+
+    if (duplicate) {
+      throw new ConflictException('Já existe um pedido com este código.');
+    }
+  }
+
   private async validateItems(companyId: string, items: CreateOrderItemInput[]): Promise<void> {
     for (const item of items) {
       await this.validateItem(companyId, item);
@@ -304,6 +330,20 @@ export class OrdersService {
     if (quantityMode !== 'SINGLE' && quantityMode !== 'SIZE_GRID') {
       throw new BadRequestException('Modo de quantidade inválido.');
     }
+  }
+
+  private validateStatusTransition(currentStatus: Order['status'], nextStatus: Order['status']): void {
+    if (canTransitionOrderStatus(currentStatus, nextStatus)) {
+      return;
+    }
+
+    const allowedTransitions = getAllowedNextOrderStatuses(currentStatus);
+    const allowedMessage =
+      allowedTransitions.length > 0
+        ? `Próximos status permitidos: ${allowedTransitions.join(', ')}.`
+        : 'Este pedido não permite novas transições de status.';
+
+    throw new BadRequestException(`Transição de status inválida. ${allowedMessage}`);
   }
 
   private async validateSizeGrid(companyId: string, sizes: CreateOrderItemSizeInput[]): Promise<void> {

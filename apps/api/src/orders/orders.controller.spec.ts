@@ -107,16 +107,16 @@ describe('OrdersController', () => {
   });
 
   it('updates an order', async () => {
-    await expect(controller.updateOrder(request, 'order_1', { orderNumber: '1001-A' })).resolves.toMatchObject({
+    await expect(controller.updateOrder(request, 'order_1', { status: 'IN_PROGRESS' })).resolves.toMatchObject({
       id: 'order_1',
-      orderNumber: '1001-A'
+      status: 'IN_PROGRESS'
     });
-    expect(service.update).toHaveBeenCalledWith('company_1', 'order_1', { orderNumber: '1001-A' });
+    expect(service.update).toHaveBeenCalledWith('company_1', 'order_1', { status: 'IN_PROGRESS' });
   });
 
   it('throws when updating a missing order', async () => {
     service.update.mockResolvedValueOnce(null);
 
-    await expect(controller.updateOrder(request, 'missing', { orderNumber: '1001-A' })).rejects.toThrow(NotFoundException);
+    await expect(controller.updateOrder(request, 'missing', { status: 'IN_PROGRESS' })).rejects.toThrow(NotFoundException);
   });
 });
